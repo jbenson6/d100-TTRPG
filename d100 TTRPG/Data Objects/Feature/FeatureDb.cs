@@ -104,9 +104,9 @@ namespace d100_TTRPG.Data_Objects.Feature
                 false
             );
 
-        public static readonly FeatureDefinition BardicePerformance =
+        public static readonly FeatureDefinition BardicPerformance =
             new FeatureDefinition(
-                Features.BardicePerformance,
+                Features.BardicPerformance,
 
                 Req((Characteristics.CHA, 25)),
 
@@ -1075,7 +1075,7 @@ namespace d100_TTRPG.Data_Objects.Feature
             {
                 { Features.AAMastery, AAMastery },
                 { Features.BardicKnowledge, BardicKnowledge },
-                { Features.BardicePerformance, BardicePerformance },
+                { Features.BardicPerformance, BardicPerformance },
                 { Features.Battlemage, Battlemage },
                 { Features.Channel, Channel },
                 { Features.CombatDiscount, CombatDiscount },

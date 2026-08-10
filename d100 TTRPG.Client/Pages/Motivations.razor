@@ -1,0 +1,68 @@
+@page "/motivations"
+@rendermode InteractiveAuto
+
+@inject HttpClient Http
+
+<PageTitle>Motivations</PageTitle>
+
+<h1>Motivations</h1>
+
+@if (!loaded)
+{
+    <p>Loading motivations...</p>
+}
+else if (items == null || !items.Any())
+{
+    <p>No motivations available.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var m in items)
+            {
+                <tr>
+                    <td>@m.Name</td>
+                    <td>@m.Description</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<SimpleDto> items = new();
+    private bool loaded = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || loaded)
+            return;
+
+        if (!OperatingSystem.IsBrowser())
+        {
+            loaded = true;
+            return;
+        }
+
+        try
+        {
+            items = await Http.GetFromJsonAsync<List<SimpleDto>>("api/motivations") ?? new List<SimpleDto>();
+        }
+        catch
+        {
+            items = new List<SimpleDto>();
+        }
+
+        loaded = true;
+        StateHasChanged();
+    }
+
+    private class SimpleDto { public string? Name { get; set; } public string? Description { get; set; } }
+}

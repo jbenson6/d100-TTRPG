@@ -1,0 +1,84 @@
+@page "/spells"
+@rendermode InteractiveAuto
+
+@inject HttpClient Http
+
+<PageTitle>Spells</PageTitle>
+
+<h1>Spells</h1>
+
+@if (!loaded)
+{
+    <p>Loading spells...</p>
+}
+else if (spells == null || !spells.Any())
+{
+    <p>No spells available.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>MP</th>
+                <th>Difficulty</th>
+                <th>School</th>
+                <th>Range</th>
+                <th>Targets</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var s in spells)
+            {
+                <tr>
+                    <td>@s.Name</td>
+                    <td>@s.MP</td>
+                    <td>@s.CastDifficulty</td>
+                    <td>@s.MagicSchool</td>
+                    <td>@s.Range</td>
+                    <td>@s.NumTargets</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<SpellDto> spells = new();
+    private bool loaded = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || loaded)
+            return;
+
+        if (!OperatingSystem.IsBrowser())
+        {
+            loaded = true;
+            return;
+        }
+
+        try
+        {
+            spells = await Http.GetFromJsonAsync<List<SpellDto>>("api/spells") ?? new List<SpellDto>();
+        }
+        catch
+        {
+            spells = new List<SpellDto>();
+        }
+
+        loaded = true;
+        StateHasChanged();
+    }
+
+    private class SpellDto
+    {
+        public string? Name { get; set; }
+        public int MP { get; set; }
+        public int CastDifficulty { get; set; }
+        public string? MagicSchool { get; set; }
+        public int Range { get; set; }
+        public int NumTargets { get; set; }
+    }
+}

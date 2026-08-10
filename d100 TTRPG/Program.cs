@@ -8,6 +8,17 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
+// Add controllers to expose API endpoints
+builder.Services.AddControllers();
+
+// Ensure HttpClient is available for interactive components (server prerender / server render)
+// Register a named client with a sensible default BaseAddress. Override via configuration key "ServerBaseAddress".
+builder.Services.AddHttpClient("Server", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["ServerBaseAddress"] ?? "https://localhost:5001/");
+});
+builder.Services.AddScoped(sp => sp.GetRequiredService<System.Net.Http.IHttpClientFactory>().CreateClient("Server"));
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -27,6 +38,8 @@ app.UseHttpsRedirection();
 app.UseAntiforgery();
 
 app.MapStaticAssets();
+// Map API controllers
+app.MapControllers();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()

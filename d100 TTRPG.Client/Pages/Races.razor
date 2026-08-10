@@ -1,0 +1,57 @@
+@page "/races"
+@rendermode InteractiveAuto
+
+@inject HttpClient Http
+
+<PageTitle>Races</PageTitle>
+
+<h1>Races</h1>
+
+@if (!loaded)
+{
+    <p>Loading races...</p>
+}
+else if (items == null || !items.Any())
+{
+    <p>No races available.</p>
+}
+else
+{
+    <ul>
+        @foreach (var r in items)
+        {
+            <li>@r.Name</li>
+        }
+    </ul>
+}
+
+@code {
+    private List<SimpleDto> items = new();
+    private bool loaded = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || loaded)
+            return;
+
+        if (!OperatingSystem.IsBrowser())
+        {
+            loaded = true;
+            return;
+        }
+
+        try
+        {
+            items = await Http.GetFromJsonAsync<List<SimpleDto>>("api/races") ?? new List<SimpleDto>();
+        }
+        catch
+        {
+            items = new List<SimpleDto>();
+        }
+
+        loaded = true;
+        StateHasChanged();
+    }
+
+    private class SimpleDto { public string? Name { get; set; } public string? Description { get; set; } }
+}

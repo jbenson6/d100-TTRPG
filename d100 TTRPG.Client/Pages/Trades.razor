@@ -1,0 +1,72 @@
+@page "/trades"
+@rendermode InteractiveAuto
+
+@inject HttpClient Http
+
+<PageTitle>Trades</PageTitle>
+
+<h1>Trades</h1>
+
+@if (!loaded)
+{
+    <p>Loading trades...</p>
+}
+else if (trades == null || !trades.Any())
+{
+    <p>No trades available.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var t in trades)
+            {
+                <tr>
+                    <td>@t.Name</td>
+                    <td>@t.Description</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<TradeDto> trades = new();
+    private bool loaded = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || loaded)
+            return;
+
+        if (!OperatingSystem.IsBrowser())
+        {
+            loaded = true;
+            return;
+        }
+
+        try
+        {
+            trades = await Http.GetFromJsonAsync<List<TradeDto>>("api/trades") ?? new List<TradeDto>();
+        }
+        catch
+        {
+            trades = new List<TradeDto>();
+        }
+
+        loaded = true;
+        StateHasChanged();
+    }
+
+    private class TradeDto
+    {
+        public string? Name { get; set; }
+        public string? Description { get; set; }
+    }
+}

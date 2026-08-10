@@ -1,0 +1,68 @@
+@page "/skills"
+@rendermode InteractiveAuto
+
+@inject HttpClient Http
+
+<PageTitle>Skills</PageTitle>
+
+<h1>Skills</h1>
+
+@if (!loaded)
+{
+    <p>Loading skills...</p>
+}
+else if (skills == null || !skills.Any())
+{
+    <p>No skills available.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var s in skills)
+            {
+                <tr>
+                    <td>@s.Name</td>
+                    <td>@s.Description</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<SimpleDto> skills = new();
+    private bool loaded = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || loaded)
+            return;
+
+        if (!OperatingSystem.IsBrowser())
+        {
+            loaded = true;
+            return;
+        }
+
+        try
+        {
+            skills = await Http.GetFromJsonAsync<List<SimpleDto>>("api/skills") ?? new List<SimpleDto>();
+        }
+        catch
+        {
+            skills = new List<SimpleDto>();
+        }
+
+        loaded = true;
+        StateHasChanged();
+    }
+
+    private class SimpleDto { public string? Name { get; set; } public string? Description { get; set; } }
+}

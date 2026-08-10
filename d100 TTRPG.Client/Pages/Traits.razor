@@ -1,0 +1,75 @@
+@page "/traits"
+@rendermode InteractiveAuto
+
+@inject HttpClient Http
+
+<PageTitle>Traits</PageTitle>
+
+<h1>Traits</h1>
+
+@if (!loaded)
+{
+    <p>Loading traits...</p>
+}
+else if (traits == null || !traits.Any())
+{
+    <p>No traits available.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var t in traits)
+            {
+                <tr>
+                    <td>@t.Name</td>
+                    <td>@t.Type</td>
+                    <td>@t.Description</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<TraitDto> traits = new();
+    private bool loaded = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || loaded)
+            return;
+
+        if (!OperatingSystem.IsBrowser())
+        {
+            loaded = true;
+            return;
+        }
+
+        try
+        {
+            traits = await Http.GetFromJsonAsync<List<TraitDto>>("api/traits") ?? new List<TraitDto>();
+        }
+        catch
+        {
+            traits = new List<TraitDto>();
+        }
+
+        loaded = true;
+        StateHasChanged();
+    }
+
+    private class TraitDto
+    {
+        public string? Name { get; set; }
+        public string? Type { get; set; }
+        public string? Description { get; set; }
+    }
+}

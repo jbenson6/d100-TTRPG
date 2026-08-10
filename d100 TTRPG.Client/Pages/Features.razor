@@ -1,0 +1,84 @@
+@page "/features"
+@rendermode InteractiveAuto
+
+@inject HttpClient Http
+@using System.Linq
+
+<PageTitle>Features</PageTitle>
+
+<h1>Features</h1>
+
+@if (features == null || !features.Any())
+{
+    <p>Loading features...</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>MP</th>
+                <th>Wounds</th>
+                <th>Armor</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var f in features)
+            {
+                <tr>
+                    <td>@f.Name</td>
+                    <td>@f.MP</td>
+                    <td>@f.Wounds</td>
+                    <td>@f.Armor</td>
+                    <td>@f.Description</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private int currentCount = 0;
+    private List<FeatureDto> features = new();
+    private bool featuresLoaded = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || featuresLoaded)
+            return;
+
+        // Only attempt HTTP fetch when running in the browser (avoid server prerender HTTP calls)
+        if (!OperatingSystem.IsBrowser())
+        {
+            featuresLoaded = true; // mark as loaded so we don't attempt again during server render
+            return;
+        }
+
+        try
+        {
+            // Load features from server API (client runtime)
+            features = await Http.GetFromJsonAsync<List<FeatureDto>>("api/features") ?? new List<FeatureDto>();
+        }
+        catch
+        {
+            // If the API isn't available, fallback to empty list so the page still renders
+            features = new List<FeatureDto>();
+        }
+
+        featuresLoaded = true;
+
+        // State has changed because data loaded after render
+        StateHasChanged();
+    }
+
+    private class FeatureDto
+    {
+        public string? Name { get; set; }
+        public int MP { get; set; }
+        public int Wounds { get; set; }
+        public string? Armor { get; set; }
+        public string? Description { get; set; }
+    }
+}

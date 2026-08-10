@@ -1,0 +1,72 @@
+@page "/talents"
+@rendermode InteractiveAuto
+
+@inject HttpClient Http
+
+<PageTitle>Talents</PageTitle>
+
+<h1>Talents</h1>
+
+@if (!loaded)
+{
+    <p>Loading talents...</p>
+}
+else if (items == null || !items.Any())
+{
+    <p>No talents available.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Tier</th>
+                <th>Combat</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var t in items)
+            {
+                <tr>
+                    <td>@t.Name</td>
+                    <td>@t.Tier</td>
+                    <td>@(t.Combat ? "Yes" : "No")</td>
+                    <td>@t.Description</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<TalentDto> items = new();
+    private bool loaded = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || loaded)
+            return;
+
+        if (!OperatingSystem.IsBrowser())
+        {
+            loaded = true;
+            return;
+        }
+
+        try
+        {
+            items = await Http.GetFromJsonAsync<List<TalentDto>>("api/talents") ?? new List<TalentDto>();
+        }
+        catch
+        {
+            items = new List<TalentDto>();
+        }
+
+        loaded = true;
+        StateHasChanged();
+    }
+
+    private class TalentDto { public string? Name { get; set; } public int Tier { get; set; } public bool Combat { get; set; } public string? Description { get; set; } }
+}

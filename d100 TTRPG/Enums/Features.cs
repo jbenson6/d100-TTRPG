@@ -4,7 +4,7 @@
     {
         AAMastery = 1,
         BardicKnowledge = 2,
-        BardicePerformance = 3,//S
+        BardicPerformance = 3,//S
         Battlemage = 4,
         Channel = 5, //S
         CombatDiscount = 6,
