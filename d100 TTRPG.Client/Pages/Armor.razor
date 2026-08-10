@@ -1,0 +1,68 @@
+@page "/armor"
+@rendermode InteractiveAuto
+
+@inject HttpClient Http
+
+<PageTitle>Armor</PageTitle>
+
+<h1>Armor</h1>
+
+@if (!loaded)
+{
+    <p>Loading armor...</p>
+}
+else if (items == null || !items.Any())
+{
+    <p>No armor definitions available.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>ArmorPoints</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var a in items)
+            {
+                <tr>
+                    <td>@a.Name</td>
+                    <td>@a.ArmorPoints</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<ArmorDto> items = new();
+    private bool loaded = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || loaded)
+            return;
+
+        if (!OperatingSystem.IsBrowser())
+        {
+            loaded = true;
+            return;
+        }
+
+        try
+        {
+            items = await Http.GetFromJsonAsync<List<ArmorDto>>("api/armor") ?? new List<ArmorDto>();
+        }
+        catch
+        {
+            items = new List<ArmorDto>();
+        }
+
+        loaded = true;
+        StateHasChanged();
+    }
+
+    private class ArmorDto { public string? Name { get; set; } public object? ArmorPoints { get; set; } }
+}

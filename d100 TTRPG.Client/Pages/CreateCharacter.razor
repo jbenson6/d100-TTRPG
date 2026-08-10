@@ -1,0 +1,188 @@
+@page "/create-character"
+@rendermode InteractiveAuto
+
+@inject HttpClient Http
+
+<PageTitle>Create Character</PageTitle>
+
+<h1>Create Character</h1>
+
+<div class="card p-3">
+    <div class="mb-3">
+        <label class="form-label">Location</label>
+        <select class="form-select" @onchange="OnLocationChanged">
+            <option value="">(Select a location)</option>
+            @foreach (var loc in locations)
+            {
+                <option value="@loc.Name" selected="@(loc.Name == selectedLocation)">@loc.Name</option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Race</label>
+        <select class="form-select" @bind="selectedRace">
+            <option value="">(Select a race)</option>
+            @foreach (var r in raceOptions)
+            {
+                <option value="@r">@r</option>
+            }
+        </select>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Background</label>
+            <select class="form-select" @bind="selectedBackground">
+                <option value="">(Select background)</option>
+                @foreach (var b in backgrounds)
+                {
+                    <option value="@b.Name">@b.Name</option>
+                }
+            </select>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Trade</label>
+            <select class="form-select" @bind="selectedTrade">
+                <option value="">(Select trade)</option>
+                @foreach (var t in trades)
+                {
+                    <option value="@t.Name">@t.Name</option>
+                }
+            </select>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Motivation</label>
+            <select class="form-select" @bind="selectedMotivation">
+                <option value="">(Select motivation)</option>
+                @foreach (var m in motivations)
+                {
+                    <option value="@m.Name">@m.Name</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Feature 1</label>
+            <select class="form-select" @bind="feature1">
+                <option value="">(Select feature)</option>
+                @foreach (var f in features)
+                {
+                    <option value="@f.Name">@f.Name</option>
+                }
+            </select>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Feature 2</label>
+            <select class="form-select" @bind="feature2">
+                <option value="">(Select feature)</option>
+                @foreach (var f in features)
+                {
+                    <option value="@f.Name">@f.Name</option>
+                }
+            </select>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Feature 3</label>
+            <select class="form-select" @bind="feature3">
+                <option value="">(Select feature)</option>
+                @foreach (var f in features)
+                {
+                    <option value="@f.Name">@f.Name</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <button class="btn btn-primary" @onclick="Submit">Create</button>
+    </div>
+
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <div class="alert alert-info mt-3">@message</div>
+    }
+</div>
+
+@code {
+    private List<LocationDto> locations = new();
+    private List<string> raceOptions = new();
+    private List<SimpleDto> backgrounds = new();
+    private List<SimpleDto> trades = new();
+    private List<SimpleDto> motivations = new();
+    private List<SimpleDto> features = new();
+
+    private string? selectedLocation;
+    private string? selectedRace;
+    private string? selectedBackground;
+    private string? selectedTrade;
+    private string? selectedMotivation;
+    private string? feature1;
+    private string? feature2;
+    private string? feature3;
+
+    private string? message;
+
+    private bool lookupsLoaded = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || lookupsLoaded)
+            return;
+
+        // Only perform HTTP fetches when running in the browser to avoid server prerender HTTP calls
+        if (!OperatingSystem.IsBrowser())
+        {
+            lookupsLoaded = true;
+            return;
+        }
+
+        try
+        {
+            // load lookups
+            locations = await Http.GetFromJsonAsync<List<LocationDto>>("api/locations") ?? new List<LocationDto>();
+            backgrounds = await Http.GetFromJsonAsync<List<SimpleDto>>("api/backgrounds") ?? new List<SimpleDto>();
+            trades = await Http.GetFromJsonAsync<List<SimpleDto>>("api/trades") ?? new List<SimpleDto>();
+            motivations = await Http.GetFromJsonAsync<List<SimpleDto>>("api/motivations") ?? new List<SimpleDto>();
+            features = await Http.GetFromJsonAsync<List<SimpleDto>>("api/features") ?? new List<SimpleDto>();
+        }
+        catch (System.Net.Http.HttpRequestException)
+        {
+            // API not available (server not running) - keep empty lists so the UI still renders
+            locations = new List<LocationDto>();
+            backgrounds = new List<SimpleDto>();
+            trades = new List<SimpleDto>();
+            motivations = new List<SimpleDto>();
+            features = new List<SimpleDto>();
+            message = "Unable to load lookups - server API not available.";
+        }
+
+        lookupsLoaded = true;
+        StateHasChanged();
+    }
+
+    private Task OnLocationChanged(ChangeEventArgs e)
+    {
+        selectedLocation = e.Value?.ToString();
+
+        var loc = locations.FirstOrDefault(l => l.Name == selectedLocation);
+        raceOptions = loc?.Races ?? new List<string>();
+        selectedRace = null;
+
+        return Task.CompletedTask;
+    }
+
+    private void Submit()
+    {
+        message = $"Created character: Location={selectedLocation}, Race={selectedRace}, Background={selectedBackground}, Trade={selectedTrade}, Motivation={selectedMotivation}, Features=[{feature1},{feature2},{feature3}]";
+    }
+
+    private class LocationDto { public string? Name { get; set; } public List<string>? Races { get; set; } }
+    private class SimpleDto { public string? Name { get; set; } public string? Description { get; set; } public string? AdditionalNotes { get; set; } }
+}
