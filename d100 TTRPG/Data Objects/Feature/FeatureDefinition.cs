@@ -1,10 +1,34 @@
-﻿namespace d100_TTRPG.Data_Objects.Feature
+﻿using d100_TTRPG.Enums;
+
+namespace d100_TTRPG.Data_Objects.Feature
 {
     public class FeatureDefinition
     {
-        public Enums.Features FeatureName { get; set; }
+        public Features Feature { get; set; }
+        public List<Characteristics>? PreReqChar { get; set; }
+        public List<Characteristics>? CharBonus { get; set; }
+        public int MP { get; set; }
+        public int Wounds { get; set; }
+        public List<Skill.Skill>? Skills { get; set; }
+        public List<Talent.Talent>? Talents { get; set; }
+        public Enums.Armor ArmorProficiency { get; set; }
+        public string? Description { get; set; }
         public bool isSpell {  get; set; }
-        public FeatureDefinition() { }
+        public bool deityReq { get; set; }
 
+        public FeatureDefinition(Features feature, List<Characteristics>? preReqChar, List<Characteristics>? charBonus, int mP, int wounds, List<Skill.Skill>? skills, List<Talent.Talent>? talents, Enums.Armor armorProficiency, string? description, bool isSpell, bool deityReq)
+        {
+            Feature = feature;
+            PreReqChar = preReqChar;
+            CharBonus = charBonus;
+            MP = mP;
+            Wounds = wounds;
+            Skills = skills;
+            Talents = talents;
+            ArmorProficiency = armorProficiency;
+            Description = description;
+            this.isSpell = isSpell;
+            this.deityReq = deityReq;
+        }
     }
 }
