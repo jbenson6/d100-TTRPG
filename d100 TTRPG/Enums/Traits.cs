@@ -2,6 +2,7 @@
 {
     public enum Traits
     {
+        // Creature Traits
         Amorphous = 1,
         Amphibious = 2,
         Bestial = 3,
@@ -19,23 +20,25 @@
         Incorporeal = 15,
         Legs = 16,
         MonstrousFeature = 17,
-        PrehensileTail = 18,
-        Regenerate = 19,
-        Swim = 20,
-        Truesight = 21,
-        Unliving = 22,
-        Vulnerability = 23,
+        NaturalArmor = 18,
+        PrehensileTail = 19,
+        Regenerate = 20,
+        Swim = 21,
+        Truesight = 22,
+        Unliving = 23,
+        Vulnerability = 24,
 
-        //Weapon Traits
-        Balanced = 24,
-        Cover = 25,
-        Defensive = 26,
-        Pounce = 27,
-        Primitive = 28,
-        Proven = 29,
-        Unbalanced = 30,
-        Unwieldly = 31,
-        Snare = 32,
-        Toxic = 33
+        // Weapon Traits
+        Balanced = 25,
+        Blast = 26,
+        Cover = 27,
+        Defensive = 28,
+        Pounce = 29,
+        Primitive = 30,
+        Proven = 31,
+        Unbalanced = 32,
+        Unwieldy = 33,
+        Snare = 34,
+        Toxic = 35
     }
 }
