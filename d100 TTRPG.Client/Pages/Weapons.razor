@@ -21,7 +21,12 @@ else
         <thead>
             <tr>
                 <th>Name</th>
-                <th>Description</th>
+                <th>Hands</th>
+                <th>Range</th>
+                <th>Damage</th>
+                <th>Penetration</th>
+                <th>Damage Types</th>
+                <th>Traits</th>
             </tr>
         </thead>
         <tbody>
@@ -29,7 +34,12 @@ else
             {
                 <tr>
                     <td>@w.Name</td>
-                    <td>@w.Description</td>
+                    <td>@w.Hands</td>
+                    <td>@w.Range</td>
+                    <td>@w.Damage</td>
+                    <td>@w.Penetration</td>
+                    <td>@w.DamageTypes</td>
+                    <td>@w.Traits</td>
                 </tr>
             }
         </tbody>
@@ -37,7 +47,7 @@ else
 }
 
 @code {
-    private List<SimpleDto> items = new();
+    private List<WeaponDto> items = new();
     private bool loaded = false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -53,16 +63,25 @@ else
 
         try
         {
-            items = await Http.GetFromJsonAsync<List<SimpleDto>>("api/weapons") ?? new List<SimpleDto>();
+            items = await Http.GetFromJsonAsync<List<WeaponDto>>("api/weapons") ?? new List<WeaponDto>();
         }
         catch
         {
-            items = new List<SimpleDto>();
+            items = new List<WeaponDto>();
         }
 
         loaded = true;
         StateHasChanged();
     }
 
-    private class SimpleDto { public string? Name { get; set; } public string? Description { get; set; } }
+    private class WeaponDto
+    {
+        public string? Name { get; set; }
+        public string? Hands { get; set; }
+        public string? Range { get; set; }
+        public string? Damage { get; set; }
+        public int Penetration { get; set; }
+        public string? DamageTypes { get; set; }
+        public string? Traits { get; set; }
+    }
 }

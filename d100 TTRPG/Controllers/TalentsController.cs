@@ -20,6 +20,7 @@ namespace d100_TTRPG.Controllers
                     Name = td.Name,
                     Tier = td.Tier,
                     Combat = td.Combat,
+                    XpCost = td.Tier * 250,
                     Description = td.Description
                 })
                 .OrderBy(x => x.Name)

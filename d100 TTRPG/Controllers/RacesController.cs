@@ -14,8 +14,19 @@ namespace d100_TTRPG.Controllers
             var items = fields
                 .Select(f => f.GetValue(null))
                 .Where(v => v != null)
-                .Select(v => new {
-                    Name = v.GetType().GetProperty("Race")?.GetValue(v)?.ToString() ?? v.ToString()
+                .OfType<d100_TTRPG.Data_Objects.Race.RaceDefinition>()
+                .Select(r => new {
+                    Name = r.Race.ToString(),
+                    Wounds = r.Wounds,
+                    MSK = r.MSK,
+                    RSK = r.RSK,
+                    STR = r.STR,
+                    AGI = r.AGI,
+                    CON = r.CON,
+                    INT = r.INT,
+                    PER = r.PER,
+                    WPR = r.WPR,
+                    CHA = r.CHA
                 })
                 .OrderBy(x => x.Name)
                 .ToList();

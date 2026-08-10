@@ -17,16 +17,45 @@ else if (items == null || !items.Any())
 }
 else
 {
-    <ul>
-        @foreach (var r in items)
-        {
-            <li>@r.Name</li>
-        }
-    </ul>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Wounds</th>
+                <th>MSK</th>
+                <th>RSK</th>
+                <th>STR</th>
+                <th>AGI</th>
+                <th>CON</th>
+                <th>INT</th>
+                <th>PER</th>
+                <th>WPR</th>
+                <th>CHA</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var r in items)
+            {
+                <tr>
+                    <td>@r.Name</td>
+                    <td>@r.Wounds</td>
+                    <td>@r.MSK</td>
+                    <td>@r.RSK</td>
+                    <td>@r.STR</td>
+                    <td>@r.AGI</td>
+                    <td>@r.CON</td>
+                    <td>@r.INT</td>
+                    <td>@r.PER</td>
+                    <td>@r.WPR</td>
+                    <td>@r.CHA</td>
+                </tr>
+            }
+        </tbody>
+    </table>
 }
 
 @code {
-    private List<SimpleDto> items = new();
+    private List<RaceDto> items = new();
     private bool loaded = false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -42,16 +71,29 @@ else
 
         try
         {
-            items = await Http.GetFromJsonAsync<List<SimpleDto>>("api/races") ?? new List<SimpleDto>();
+            items = await Http.GetFromJsonAsync<List<RaceDto>>("api/races") ?? new List<RaceDto>();
         }
         catch
         {
-            items = new List<SimpleDto>();
+            items = new List<RaceDto>();
         }
 
         loaded = true;
         StateHasChanged();
     }
 
-    private class SimpleDto { public string? Name { get; set; } public string? Description { get; set; } }
+    private class RaceDto
+    {
+        public string? Name { get; set; }
+        public int Wounds { get; set; }
+        public int MSK { get; set; }
+        public int RSK { get; set; }
+        public int STR { get; set; }
+        public int AGI { get; set; }
+        public int CON { get; set; }
+        public int INT { get; set; }
+        public int PER { get; set; }
+        public int WPR { get; set; }
+        public int CHA { get; set; }
+    }
 }

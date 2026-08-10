@@ -23,6 +23,7 @@ else
                 <th>Name</th>
                 <th>Tier</th>
                 <th>Combat</th>
+                <th>XP</th>
                 <th>Description</th>
             </tr>
         </thead>
@@ -33,6 +34,7 @@ else
                     <td>@t.Name</td>
                     <td>@t.Tier</td>
                     <td>@(t.Combat ? "Yes" : "No")</td>
+                    <td>@t.XpCost</td>
                     <td>@t.Description</td>
                 </tr>
             }
@@ -68,5 +70,5 @@ else
         StateHasChanged();
     }
 
-    private class TalentDto { public string? Name { get; set; } public int Tier { get; set; } public bool Combat { get; set; } public string? Description { get; set; } }
+    private class TalentDto { public string? Name { get; set; } public int Tier { get; set; } public bool Combat { get; set; } public int XpCost { get; set; } public string? Description { get; set; } }
 }

@@ -21,6 +21,7 @@ else
         <thead>
             <tr>
                 <th>Name</th>
+                <th>XP</th>
                 <th>MP</th>
                 <th>Difficulty</th>
                 <th>School</th>
@@ -33,6 +34,7 @@ else
             {
                 <tr>
                     <td>@s.Name</td>
+                    <td>@s.XpCost</td>
                     <td>@s.MP</td>
                     <td>@s.CastDifficulty</td>
                     <td>@s.MagicSchool</td>
@@ -75,6 +77,7 @@ else
     private class SpellDto
     {
         public string? Name { get; set; }
+        public int XpCost { get; set; }
         public int MP { get; set; }
         public int CastDifficulty { get; set; }
         public string? MagicSchool { get; set; }

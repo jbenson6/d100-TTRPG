@@ -26,6 +26,7 @@ namespace d100_TTRPG.Controllers
                         items.Add(new
                         {
                             Name = key,
+                            XpCost = sd.XpCost,
                             MP = sd.MPReq,
                             CastDifficulty = sd.CastDifficulty,
                             MagicSchool = sd.MagicSchool.ToString(),
