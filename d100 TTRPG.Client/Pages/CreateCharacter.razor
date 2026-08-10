@@ -9,6 +9,17 @@
 
 <div class="card p-3">
     <div class="mb-3">
+        <label class="form-label">Power Level</label>
+        <select class="form-select" @onchange="OnPowerLevelChanged">
+            <option value="">(Select a power level)</option>
+            @foreach (var p in powerLevels)
+            {
+                <option value="@p.Name" selected="@(selectedPowerLevel != null && p.Name == selectedPowerLevel.Name)">@p.Name (@p.Points pts, @p.Features features)</option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
         <label class="form-label">Location</label>
         <select class="form-select" @onchange="OnLocationChanged">
             <option value="">(Select a location)</option>
@@ -21,13 +32,18 @@
 
     <div class="mb-3">
         <label class="form-label">Race</label>
-        <select class="form-select" @bind="selectedRace">
+        <select class="form-select" @onchange="OnRaceChanged">
             <option value="">(Select a race)</option>
             @foreach (var r in raceOptions)
             {
-                <option value="@r">@r</option>
+                <option value="@r" selected="@(r==selectedRace)">@r</option>
             }
         </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Character Name</label>
+        <input class="form-control" @bind="characterName" placeholder="Character name (used for filename)" />
     </div>
 
     <div class="row">
@@ -88,15 +104,111 @@
             </select>
         </div>
 
-        <div class="col-md-4 mb-3">
-            <label class="form-label">Feature 3</label>
-            <select class="form-select" @bind="feature3">
-                <option value="">(Select feature)</option>
-                @foreach (var f in features)
+        @if (allowedFeatures >= 3)
+        {
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Feature 3</label>
+                <select class="form-select" @bind="feature3">
+                    <option value="">(Select feature)</option>
+                    @foreach (var f in features)
+                    {
+                        <option value="@f.Name">@f.Name</option>
+                    }
+                </select>
+            </div>
+        }
+        @if (allowedFeatures >= 4)
+        {
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Feature 4</label>
+                <select class="form-select" @bind="feature4">
+                    <option value="">(Select feature)</option>
+                    @foreach (var f in features)
+                    {
+                        <option value="@f.Name">@f.Name</option>
+                    }
+                </select>
+            </div>
+        }
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card p-3">
+                <h5>Character Sheet</h5>
+                <div class="mb-2">Points available: <strong>@availablePoints</strong></div>
+
+                @if (baseStats != null && baseStats.Any())
                 {
-                    <option value="@f.Name">@f.Name</option>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr><th>Stat</th><th>Value</th><th></th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var key in new[] { "MSK","RSK","STR","AGI","CON","INT","PER","WPR","CHA" })
+                            {
+                                var baseVal = baseStats.ContainsKey(key) ? baseStats[key] : 0;
+                                var curVal = currentStats.ContainsKey(key) ? currentStats[key] : baseVal;
+                                <tr>
+                                    <td>@key</td>
+                                    <td>@curVal</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-secondary me-1" @onclick="() => DecreaseStat(key)" disabled="@(curVal <= baseVal + 5)">-</button>
+                                        <button class="btn btn-sm btn-secondary" @onclick="() => IncreaseStat(key)" disabled="@(availablePoints < 5 || curVal >= baseVal + 20)">+</button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
                 }
-            </select>
+                else
+                {
+                    <p class="text-muted">Select a race to populate base statistics.</p>
+                }
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card p-3">
+                <h5>Equipment</h5>
+
+                <div class="mb-3">
+                    <label class="form-label">Armor</label>
+                    <select class="form-select" @bind="selectedArmor">
+                        <option value="">(Select armor)</option>
+                        @foreach (var a in armors)
+                        {
+                            <option value="@a.Name">@a.Name (@a.ArmorPoints)</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Main hand</label>
+                    <select class="form-select" @onchange="OnMainWeaponChanged">
+                        <option value="">(Select main weapon)</option>
+                        @foreach (var w in weapons)
+                        {
+                            <option value="@w.Name" selected="@(w.Name==selectedMainWeapon)">@w.Name (@w.Hands / @w.Range)</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Off hand</label>
+                    <select class="form-select" @bind="selectedOffWeapon" disabled="@IsOffhandDisabled()">
+                        <option value="">(Select off-hand)</option>
+                        @foreach (var w in weapons)
+                        {
+                            <option value="@w.Name">@w.Name (@w.Hands)</option>
+                        }
+                    </select>
+                    @if (IsOffhandDisabled())
+                    {
+                        <div class="form-text">Off-hand disabled for two-handed or ranged main weapons.</div>
+                    }
+                </div>
+            </div>
         </div>
     </div>
 
@@ -110,6 +222,41 @@
     }
 </div>
 
+<div class="card p-3 mt-3">
+    <h5>Save / Load</h5>
+    <div class="row g-2 align-items-center">
+        <div class="col-auto">
+            <button class="btn btn-success" @onclick="SaveCharacter" disabled="@(!CanSave())">Save</button>
+        </div>
+        <div class="col-auto">
+            <select class="form-select" style="min-width:240px" @bind="selectedSavedFile">
+                <option value="">(Select saved file)</option>
+                @foreach (var f in savedFiles)
+                {
+                    <option value="@f">@f</option>
+                }
+            </select>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-secondary" @onclick="LoadCharacter" disabled="@(string.IsNullOrEmpty(selectedSavedFile))">Load</button>
+        </div>
+    </div>
+    @if (!string.IsNullOrEmpty(saveMessage))
+    {
+        <div class="mt-2 text-muted">@saveMessage</div>
+    }
+
+    <div class="mt-3">
+        <label class="form-label">Save base folder (optional)</label>
+        <div class="input-group">
+            <input class="form-control" @bind="customBasePath" placeholder="Enter base folder or leave empty for default" />
+            <button class="btn btn-outline-primary" @onclick="SetSavePath">Set</button>
+            <button class="btn btn-outline-secondary" @onclick="ResetSavePath">Reset to default</button>
+        </div>
+        <div class="form-text mt-1">Current save folder: @currentSaveFolder</div>
+    </div>
+</div>
+
 @code {
     private List<LocationDto> locations = new();
     private List<string> raceOptions = new();
@@ -117,6 +264,12 @@
     private List<SimpleDto> trades = new();
     private List<SimpleDto> motivations = new();
     private List<SimpleDto> features = new();
+    private List<WeaponDto> weapons = new();
+    private List<ArmorDto> armors = new();
+    private List<RaceDto> races = new();
+    private List<PowerLevelDto> powerLevels = new();
+    private PowerLevelDto? selectedPowerLevel;
+    private int allowedFeatures = 3;
 
     private string? selectedLocation;
     private string? selectedRace;
@@ -126,8 +279,24 @@
     private string? feature1;
     private string? feature2;
     private string? feature3;
+    private string? feature4;
+    private string? selectedArmor;
+    private string? selectedMainWeapon;
+    private string? selectedOffWeapon;
+
+    // Characteristic scores
+    private Dictionary<string,int> baseStats = new();
+    private Dictionary<string,int> currentStats = new();
+    private int availablePoints = 120;
 
     private string? message;
+    private string? characterName;
+    private List<string> savedFiles = new();
+    private string? selectedSavedFile;
+    private string? saveMessage;
+    private DiagnosticsInfo? diagnostics;
+    private string? customBasePath;
+    private string? currentSaveFolder;
 
     private bool lookupsLoaded = false;
 
@@ -151,6 +320,19 @@
             trades = await Http.GetFromJsonAsync<List<SimpleDto>>("api/trades") ?? new List<SimpleDto>();
             motivations = await Http.GetFromJsonAsync<List<SimpleDto>>("api/motivations") ?? new List<SimpleDto>();
             features = await Http.GetFromJsonAsync<List<SimpleDto>>("api/features") ?? new List<SimpleDto>();
+            weapons = await Http.GetFromJsonAsync<List<WeaponDto>>("api/weapons") ?? new List<WeaponDto>();
+            armors = await Http.GetFromJsonAsync<List<ArmorDto>>("api/armor") ?? new List<ArmorDto>();
+            races = await Http.GetFromJsonAsync<List<RaceDto>>("api/races") ?? new List<RaceDto>();
+            powerLevels = await Http.GetFromJsonAsync<List<PowerLevelDto>>("api/powerlevels") ?? new List<PowerLevelDto>();
+            // default power level to Standard if present
+            selectedPowerLevel = powerLevels.FirstOrDefault(p => p.Name == "Standard") ?? powerLevels.FirstOrDefault();
+            if (selectedPowerLevel != null)
+            {
+                allowedFeatures = selectedPowerLevel.Features;
+                // reserve mandatory +5 per stat when race selected; for now subtract mandatory from available points
+                var mandatory = 9 * 5;
+                availablePoints = Math.Max(0, selectedPowerLevel.Points - mandatory);
+            }
         }
         catch (System.Net.Http.HttpRequestException)
         {
@@ -160,10 +342,14 @@
             trades = new List<SimpleDto>();
             motivations = new List<SimpleDto>();
             features = new List<SimpleDto>();
-            message = "Unable to load lookups - server API not available.";
+            saveMessage = "Unable to load lookups - server API not available.";
         }
 
         lookupsLoaded = true;
+        // load saved files and diagnostics
+        await LoadSavedFiles();
+        await LoadDiagnostics();
+        if (diagnostics != null) currentSaveFolder = diagnostics.SaveFolder;
         StateHasChanged();
     }
 
@@ -178,11 +364,359 @@
         return Task.CompletedTask;
     }
 
+    private void OnRaceChanged(ChangeEventArgs e)
+    {
+        selectedRace = e.Value?.ToString();
+        var r = races.FirstOrDefault(x => x.Name == selectedRace);
+        if (r != null)
+        {
+            baseStats = new Dictionary<string,int>
+            {
+                ["MSK"] = r.MSK,
+                ["RSK"] = r.RSK,
+                ["STR"] = r.STR,
+                ["AGI"] = r.AGI,
+                ["CON"] = r.CON,
+                ["INT"] = r.INT,
+                ["PER"] = r.PER,
+                ["WPR"] = r.WPR,
+                ["CHA"] = r.CHA
+            };
+
+            // Initialize current stats to base + mandatory +5 per stat
+            currentStats = baseStats.ToDictionary(kv => kv.Key, kv => kv.Value + 5);
+
+            var mandatory = 9 * 5;
+            if (selectedPowerLevel != null)
+            {
+                availablePoints = Math.Max(0, selectedPowerLevel.Points - mandatory);
+                allowedFeatures = selectedPowerLevel.Features;
+            }
+            else
+            {
+                availablePoints = Math.Max(0, 120 - mandatory);
+            }
+        }
+        else
+        {
+            baseStats.Clear();
+            currentStats.Clear();
+        }
+    }
+
+    private void OnMainWeaponChanged(ChangeEventArgs e)
+    {
+        selectedMainWeapon = e.Value?.ToString();
+        var w = weapons.FirstOrDefault(x => x.Name == selectedMainWeapon);
+        if (w != null)
+        {
+            // if main weapon is two-handed or ranged, disable off-hand
+            bool disableOff = false;
+            if (!string.IsNullOrEmpty(w.Hands) && w.Hands.Contains("TwoHanded")) disableOff = true;
+            if (!string.IsNullOrEmpty(w.Range) && !w.Range.Contains("Melee")) disableOff = true;
+
+            if (disableOff)
+            {
+                selectedOffWeapon = null;
+            }
+        }
+    }
+
+    private void OnPowerLevelChanged(ChangeEventArgs e)
+    {
+        var name = e.Value?.ToString();
+        selectedPowerLevel = powerLevels.FirstOrDefault(p => p.Name == name);
+        if (selectedPowerLevel != null)
+        {
+            allowedFeatures = selectedPowerLevel.Features;
+            var mandatory = 9 * 5;
+            availablePoints = Math.Max(0, selectedPowerLevel.Points - mandatory);
+        }
+    }
+
+    private bool IsOffhandDisabled()
+    {
+        if (string.IsNullOrEmpty(selectedMainWeapon)) return false;
+        var w = weapons.FirstOrDefault(x => x.Name == selectedMainWeapon);
+        if (w == null) return false;
+        if (!string.IsNullOrEmpty(w.Hands) && w.Hands.Contains("TwoHanded")) return true;
+        if (!string.IsNullOrEmpty(w.Range) && !w.Range.Contains("Melee")) return true;
+        return false;
+    }
+
+    private void IncreaseStat(string key)
+    {
+        if (availablePoints < 5) return;
+        var baseVal = baseStats.ContainsKey(key) ? baseStats[key] : 0;
+        var cur = currentStats.ContainsKey(key) ? currentStats[key] : baseVal;
+        // max +20 from base
+        if (cur >= baseVal + 20) return;
+        currentStats[key] = cur + 5;
+        availablePoints -= 5;
+    }
+
+    private void DecreaseStat(string key)
+    {
+        if (!baseStats.ContainsKey(key)) return;
+        var baseVal = baseStats[key];
+        var minVal = baseVal + 5; // enforced minimum
+        var cur = currentStats.ContainsKey(key) ? currentStats[key] : baseVal;
+        if (cur <= minVal) return;
+        currentStats[key] = cur - 5;
+        availablePoints += 5;
+    }
+
     private void Submit()
     {
         message = $"Created character: Location={selectedLocation}, Race={selectedRace}, Background={selectedBackground}, Trade={selectedTrade}, Motivation={selectedMotivation}, Features=[{feature1},{feature2},{feature3}]";
     }
 
+    private bool CanSave()
+    {
+        return !string.IsNullOrWhiteSpace(characterName) && !string.IsNullOrWhiteSpace(selectedLocation) && !string.IsNullOrWhiteSpace(selectedRace);
+    }
+
+    private async Task SaveCharacter()
+    {
+        if (!CanSave())
+        {
+            saveMessage = "Provide Name, Location and Race before saving.";
+            return;
+        }
+
+        var dto = new ClientCharacterDto
+        {
+            Name = characterName,
+            PowerLevel = selectedPowerLevel?.Name,
+            Location = selectedLocation,
+            Race = selectedRace,
+            Background = selectedBackground,
+            Trade = selectedTrade,
+            Motivation = selectedMotivation,
+            Features = new List<string> { feature1, feature2, feature3, feature4 }.Where(s => !string.IsNullOrEmpty(s)).ToList(),
+            Armor = selectedArmor,
+            MainWeapon = selectedMainWeapon,
+            OffWeapon = selectedOffWeapon,
+            CurrentStats = currentStats,
+            AvailablePoints = availablePoints
+        };
+
+        try
+        {
+            var res = await Http.PostAsJsonAsync("api/characters", dto);
+            if (res.IsSuccessStatusCode)
+            {
+                try
+                {
+                    using var stream = await res.Content.ReadAsStreamAsync();
+                    using var doc = await System.Text.Json.JsonDocument.ParseAsync(stream);
+                    if (doc.RootElement.TryGetProperty("path", out var pathProp))
+                    {
+                        saveMessage = $"Saved: {pathProp.GetString()}";
+                    }
+                    else if (doc.RootElement.TryGetProperty("file", out var fileProp))
+                    {
+                        saveMessage = $"Saved: {fileProp.GetString()}";
+                    }
+                    else
+                    {
+                        saveMessage = "Saved.";
+                    }
+                }
+                catch
+                {
+                    saveMessage = "Saved.";
+                }
+
+                await LoadSavedFiles();
+            }
+            else
+            {
+                saveMessage = $"Save failed: {res.StatusCode}";
+            }
+        }
+        catch (Exception ex)
+        {
+            saveMessage = "Save error: " + ex.Message;
+        }
+    }
+
+    private async Task LoadSavedFiles()
+    {
+        try
+        {
+            savedFiles = await Http.GetFromJsonAsync<List<string>>("api/characters") ?? new List<string>();
+        }
+        catch
+        {
+            savedFiles = new List<string>();
+        }
+    }
+
+    private async Task LoadCharacter()
+    {
+        if (string.IsNullOrEmpty(selectedSavedFile)) return;
+        try
+        {
+            var dto = await Http.GetFromJsonAsync<ClientCharacterDto>($"api/characters/{selectedSavedFile}");
+            if (dto != null)
+            {
+                characterName = dto.Name;
+                selectedPowerLevel = powerLevels.FirstOrDefault(p => p.Name == dto.PowerLevel) ?? selectedPowerLevel;
+                selectedLocation = dto.Location;
+                var loc = locations.FirstOrDefault(l => l.Name == selectedLocation);
+                raceOptions = loc?.Races ?? raceOptions;
+                selectedRace = dto.Race;
+                // populate base stats from race definition so UI enforces min/max correctly
+                var raceDef = races.FirstOrDefault(x => x.Name == selectedRace);
+                if (raceDef != null)
+                {
+                    baseStats = new Dictionary<string,int>
+                    {
+                        ["MSK"] = raceDef.MSK,
+                        ["RSK"] = raceDef.RSK,
+                        ["STR"] = raceDef.STR,
+                        ["AGI"] = raceDef.AGI,
+                        ["CON"] = raceDef.CON,
+                        ["INT"] = raceDef.INT,
+                        ["PER"] = raceDef.PER,
+                        ["WPR"] = raceDef.WPR,
+                        ["CHA"] = raceDef.CHA
+                    };
+                }
+                selectedBackground = dto.Background;
+                selectedTrade = dto.Trade;
+                selectedMotivation = dto.Motivation;
+                feature1 = dto.Features != null && dto.Features.Count > 0 ? dto.Features[0] : null;
+                feature2 = dto.Features != null && dto.Features.Count > 1 ? dto.Features[1] : null;
+                feature3 = dto.Features != null && dto.Features.Count > 2 ? dto.Features[2] : null;
+                feature4 = dto.Features != null && dto.Features.Count > 3 ? dto.Features[3] : null;
+                selectedArmor = dto.Armor;
+                selectedMainWeapon = dto.MainWeapon;
+                selectedOffWeapon = dto.OffWeapon;
+                // restore current stats; if not present, initialize from base + mandatory
+                if (dto.CurrentStats != null && dto.CurrentStats.Count > 0)
+                {
+                    currentStats = new Dictionary<string,int>(dto.CurrentStats);
+                }
+                else if (baseStats != null && baseStats.Any())
+                {
+                    currentStats = baseStats.ToDictionary(kv => kv.Key, kv => kv.Value + 5);
+                }
+
+                // restore available points
+                availablePoints = dto.AvailablePoints;
+                // ensure allowed features reflect selected power level
+                if (selectedPowerLevel != null) allowedFeatures = selectedPowerLevel.Features;
+                saveMessage = "Loaded.";
+            }
+        }
+        catch (Exception ex)
+        {
+            saveMessage = "Load error: " + ex.Message;
+        }
+    }
+
+    private async Task LoadDiagnostics()
+    {
+        try
+        {
+            diagnostics = await Http.GetFromJsonAsync<DiagnosticsInfo>("api/diagnostics");
+        }
+        catch
+        {
+            diagnostics = null;
+        }
+    }
+
+    private async Task SetSavePath()
+    {
+        if (string.IsNullOrWhiteSpace(customBasePath))
+        {
+            saveMessage = "Enter a base folder path before setting.";
+            return;
+        }
+        try
+        {
+            var dto = new { BasePath = customBasePath };
+            var res = await Http.PostAsJsonAsync("api/characters/savepath", dto);
+            if (res.IsSuccessStatusCode)
+            {
+                var info = await res.Content.ReadFromJsonAsync<Dictionary<string,string>>();
+                if (info != null && info.TryGetValue("folder", out var folder))
+                {
+                    currentSaveFolder = folder;
+                    saveMessage = $"Save folder set to: {folder}";
+                }
+                else
+                {
+                    saveMessage = "Save path set.";
+                }
+                await LoadSavedFiles();
+            }
+            else
+            {
+                saveMessage = $"Set save path failed: {res.StatusCode}";
+            }
+        }
+        catch (Exception ex)
+        {
+            saveMessage = "Set save path error: " + ex.Message;
+        }
+    }
+
+    private async Task ResetSavePath()
+    {
+        try
+        {
+            var res = await Http.DeleteAsync("api/characters/savepath");
+            if (res.IsSuccessStatusCode)
+            {
+                var info = await res.Content.ReadFromJsonAsync<Dictionary<string,string>>();
+                if (info != null && info.TryGetValue("folder", out var folder))
+                {
+                    currentSaveFolder = folder;
+                    saveMessage = $"Reset to default folder: {folder}";
+                }
+                else
+                {
+                    saveMessage = "Reset to default.";
+                }
+                await LoadSavedFiles();
+            }
+            else
+            {
+                saveMessage = $"Reset failed: {res.StatusCode}";
+            }
+        }
+        catch (Exception ex)
+        {
+            saveMessage = "Reset error: " + ex.Message;
+        }
+    }
+
+    private class ClientCharacterDto
+    {
+        public string? Name { get; set; }
+        public string? PowerLevel { get; set; }
+        public string? Location { get; set; }
+        public string? Race { get; set; }
+        public string? Background { get; set; }
+        public string? Trade { get; set; }
+        public string? Motivation { get; set; }
+        public List<string>? Features { get; set; }
+        public string? Armor { get; set; }
+        public string? MainWeapon { get; set; }
+        public string? OffWeapon { get; set; }
+        public Dictionary<string,int>? CurrentStats { get; set; }
+        public int AvailablePoints { get; set; }
+    }
+
     private class LocationDto { public string? Name { get; set; } public List<string>? Races { get; set; } }
     private class SimpleDto { public string? Name { get; set; } public string? Description { get; set; } public string? AdditionalNotes { get; set; } }
+    private class WeaponDto { public string? Name { get; set; } public string? Hands { get; set; } public string? Range { get; set; } public string? Damage { get; set; } public int Penetration { get; set; } public string? DamageTypes { get; set; } public string? Traits { get; set; } }
+    private class ArmorDto { public string? Name { get; set; } public int? ArmorPoints { get; set; } }
+    private class RaceDto { public string? Name { get; set; } public int Wounds { get; set; } public int MSK { get; set; } public int RSK { get; set; } public int STR { get; set; } public int AGI { get; set; } public int CON { get; set; } public int INT { get; set; } public int PER { get; set; } public int WPR { get; set; } public int CHA { get; set; } }
+    private class PowerLevelDto { public string? Name { get; set; } public int Points { get; set; } public int Features { get; set; } public string? Description { get; set; } }
+    private class DiagnosticsInfo { public string? SaveFolder { get; set; } public bool FolderExists { get; set; } public bool CanWrite { get; set; } public string? WriteTestError { get; set; } public string? DriveRoot { get; set; } public long AvailableFreeBytes { get; set; } public string? ServerUser { get; set; } }
 }

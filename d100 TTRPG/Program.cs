@@ -46,3 +46,20 @@ app.MapRazorComponents<App>()
     .AddAdditionalAssemblies(typeof(d100_TTRPG.Client._Imports).Assembly);
 
 app.Run();
+
+// Log mapped endpoints to help diagnose routing issues on startup
+try
+{
+    var dataSource = app.Services.GetService(typeof(Microsoft.AspNetCore.Routing.EndpointDataSource)) as Microsoft.AspNetCore.Routing.EndpointDataSource;
+    if (dataSource != null)
+    {
+        foreach (var ep in dataSource.Endpoints)
+        {
+            app.Logger.LogInformation("Mapped endpoint: {endpoint}", ep.DisplayName ?? ep.ToString());
+        }
+    }
+}
+catch (Exception ex)
+{
+    app.Logger.LogWarning(ex, "Failed to enumerate endpoints");
+}
