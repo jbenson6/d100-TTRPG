@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="d100 TTRPG.Client/d100 TTRPG.Client.csproj" />
+  <Project Path="d100 TTRPG/d100 TTRPG.csproj" />
+</Solution>
