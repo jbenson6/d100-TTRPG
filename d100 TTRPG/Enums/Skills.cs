@@ -22,6 +22,7 @@
         Persuade = 18,
         Ride = 19,
         Stealth = 20,
-        Survival = 21
+        Survival = 21,
+        QuickDraw = 22
     }
 }
