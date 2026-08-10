@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace d100_TTRPG.Data_Objects.Talent
 {
-    public class TalentDefinition
+    public class TalentChainDefinition
     {
-        public Talents Talent { get; set; }
+        public TalentChains Talent { get; set; }
 
         public string Name { get; set; }
 
@@ -17,20 +17,28 @@ namespace d100_TTRPG.Data_Objects.Talent
 
         public string Description { get; set; }
 
-        public TalentDefinition(
-            Talents talent,
+        public bool Repeatable { get; set; }
+
+        public int? MaximumRanks { get; set; }
+
+        public TalentChainDefinition(
+            TalentChains talent,
             string name,
             int tier,
             bool combat,
-            List<TalentPrerequisite>? prerequisites,
-            string description)
+            string description,
+            List<TalentPrerequisite>? prerequisites = null,
+            bool repeatable = false,
+            int? maximumRanks = null)
         {
             Talent = talent;
             Name = name;
             Tier = tier;
             Combat = combat;
-            Prerequisites = prerequisites ?? new List<TalentPrerequisite>();
             Description = description;
+            Prerequisites = prerequisites ?? new List<TalentPrerequisite>();
+            Repeatable = repeatable;
+            MaximumRanks = maximumRanks;
         }
     }
 }
