@@ -19,6 +19,50 @@
         </select>
     </div>
 
+<div class="card p-3 mt-3">
+    <h5>Derived</h5>
+    <div class="row">
+        <div class="col-md-6">
+            <div><strong>Wounds</strong>: @GetTotalWounds()</div>
+            <div><strong>MP</strong>: @GetTotalMP()</div>
+            <div><strong>Armor Points</strong>: @GetArmorPoints()</div>
+        </div>
+        <div class="col-md-6">
+            <h6>Skills</h6>
+            @if (skillCounts.Any())
+            {
+                <ul>
+                    @foreach (var kv in skillCounts)
+                    {
+                        <li>@kv.Key - @GetSkillRank(kv.Value)</li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <div class="text-muted">No skills from features.</div>
+            }
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <h6>Spells available</h6>
+        @if (spells != null && spells.Any())
+        {
+            <ul>
+                @foreach (var s in spells.Where(s => s.MP <= GetTotalMP()).OrderBy(s => s.Name))
+                {
+                    <li>@s.Name @if (s.XpCost == 0) { <span class="text-success">(free)</span> }</li>
+                }
+            </ul>
+        }
+        else
+        {
+            <div class="text-muted">No spells loaded.</div>
+        }
+    </div>
+</div>
+
     <div class="mb-3">
         <label class="form-label">Location</label>
         <select class="form-select" @onchange="OnLocationChanged">
@@ -84,50 +128,66 @@
     <div class="row">
         <div class="col-md-4 mb-3">
             <label class="form-label">Feature 1</label>
-            <select class="form-select" @bind="feature1">
+            <select class="form-select" @onchange="e => OnFeatureSelected(1, e)">
                 <option value="">(Select feature)</option>
                 @foreach (var f in features)
                 {
-                    <option value="@f.Name">@f.Name</option>
+                    <option value="@f.Name" selected="@(feature1==f.Name)">@f.Name</option>
                 }
             </select>
+            @if (featureWarnings.ContainsKey(1))
+            {
+                <div class="text-danger mt-1">@featureWarnings[1]</div>
+            }
         </div>
 
         <div class="col-md-4 mb-3">
             <label class="form-label">Feature 2</label>
-            <select class="form-select" @bind="feature2">
+            <select class="form-select" @onchange="e => OnFeatureSelected(2, e)">
                 <option value="">(Select feature)</option>
                 @foreach (var f in features)
                 {
-                    <option value="@f.Name">@f.Name</option>
+                    <option value="@f.Name" selected="@(feature2==f.Name)">@f.Name</option>
                 }
             </select>
+            @if (featureWarnings.ContainsKey(2))
+            {
+                <div class="text-danger mt-1">@featureWarnings[2]</div>
+            }
         </div>
 
         @if (allowedFeatures >= 3)
         {
             <div class="col-md-4 mb-3">
                 <label class="form-label">Feature 3</label>
-                <select class="form-select" @bind="feature3">
+                <select class="form-select" @onchange="e => OnFeatureSelected(3, e)">
                     <option value="">(Select feature)</option>
                     @foreach (var f in features)
                     {
-                        <option value="@f.Name">@f.Name</option>
+                        <option value="@f.Name" selected="@(feature3==f.Name)">@f.Name</option>
                     }
                 </select>
+                @if (featureWarnings.ContainsKey(3))
+                {
+                    <div class="text-danger mt-1">@featureWarnings[3]</div>
+                }
             </div>
         }
         @if (allowedFeatures >= 4)
         {
             <div class="col-md-4 mb-3">
                 <label class="form-label">Feature 4</label>
-                <select class="form-select" @bind="feature4">
+                <select class="form-select" @onchange="e => OnFeatureSelected(4, e)">
                     <option value="">(Select feature)</option>
                     @foreach (var f in features)
                     {
-                        <option value="@f.Name">@f.Name</option>
+                        <option value="@f.Name" selected="@(feature4==f.Name)">@f.Name</option>
                     }
                 </select>
+                @if (featureWarnings.ContainsKey(4))
+                {
+                    <div class="text-danger mt-1">@featureWarnings[4]</div>
+                }
             </div>
         }
     </div>
@@ -140,18 +200,23 @@
 
                 @if (baseStats != null && baseStats.Any())
                 {
-                    <table class="table table-sm">
+                <table class="table table-sm">
                         <thead>
-                            <tr><th>Stat</th><th>Value</th><th></th></tr>
+                            <tr><th>Stat</th><th>Value</th><th>Feat</th><th>Bonus</th><th></th></tr>
                         </thead>
                         <tbody>
                             @foreach (var key in new[] { "MSK","RSK","STR","AGI","CON","INT","PER","WPR","CHA" })
                             {
                                 var baseVal = baseStats.ContainsKey(key) ? baseStats[key] : 0;
                                 var curVal = currentStats.ContainsKey(key) ? currentStats[key] : baseVal;
+                                featureBonuses.TryGetValue(key, out var fb);
+                                var effective = curVal + fb;
+                                var charBonus = effective / 10;
                                 <tr>
                                     <td>@key</td>
-                                    <td>@curVal</td>
+                                    <td>@effective @if(fb>0){ <small class="text-success">(+@fb)</small> }</td>
+                                    <td>@fb</td>
+                                    <td>@charBonus</td>
                                     <td>
                                         <button class="btn btn-sm btn-secondary me-1" @onclick="() => DecreaseStat(key)" disabled="@(curVal <= baseVal + 5)">-</button>
                                         <button class="btn btn-sm btn-secondary" @onclick="() => IncreaseStat(key)" disabled="@(availablePoints < 5 || curVal >= baseVal + 20)">+</button>
@@ -263,7 +328,7 @@
     private List<SimpleDto> backgrounds = new();
     private List<SimpleDto> trades = new();
     private List<SimpleDto> motivations = new();
-    private List<SimpleDto> features = new();
+    private List<FeatureDto> features = new();
     private List<WeaponDto> weapons = new();
     private List<ArmorDto> armors = new();
     private List<RaceDto> races = new();
@@ -280,6 +345,13 @@
     private string? feature2;
     private string? feature3;
     private string? feature4;
+
+    // feature related
+    private Dictionary<string,int> featureBonuses = new(); // char -> total bonus from features (each +5)
+    private Dictionary<string,int> skillCounts = new();
+    private int totalFeatureWounds = 0;
+    private int totalFeatureMP = 0;
+    private Dictionary<int,string> featureWarnings = new();
     private string? selectedArmor;
     private string? selectedMainWeapon;
     private string? selectedOffWeapon;
@@ -297,6 +369,7 @@
     private DiagnosticsInfo? diagnostics;
     private string? customBasePath;
     private string? currentSaveFolder;
+    private List<SpellDto> spells = new();
 
     private bool lookupsLoaded = false;
 
@@ -319,9 +392,18 @@
             backgrounds = await Http.GetFromJsonAsync<List<SimpleDto>>("api/backgrounds") ?? new List<SimpleDto>();
             trades = await Http.GetFromJsonAsync<List<SimpleDto>>("api/trades") ?? new List<SimpleDto>();
             motivations = await Http.GetFromJsonAsync<List<SimpleDto>>("api/motivations") ?? new List<SimpleDto>();
-            features = await Http.GetFromJsonAsync<List<SimpleDto>>("api/features") ?? new List<SimpleDto>();
+            features = await Http.GetFromJsonAsync<List<FeatureDto>>("api/features") ?? new List<FeatureDto>();
             weapons = await Http.GetFromJsonAsync<List<WeaponDto>>("api/weapons") ?? new List<WeaponDto>();
             armors = await Http.GetFromJsonAsync<List<ArmorDto>>("api/armor") ?? new List<ArmorDto>();
+            // load spells for character spell list
+            try
+            {
+                spells = await Http.GetFromJsonAsync<List<SpellDto>>("api/spells") ?? new List<SpellDto>();
+            }
+            catch
+            {
+                spells = new List<SpellDto>();
+            }
             races = await Http.GetFromJsonAsync<List<RaceDto>>("api/races") ?? new List<RaceDto>();
             powerLevels = await Http.GetFromJsonAsync<List<PowerLevelDto>>("api/powerlevels") ?? new List<PowerLevelDto>();
             // default power level to Standard if present
@@ -341,7 +423,7 @@
             backgrounds = new List<SimpleDto>();
             trades = new List<SimpleDto>();
             motivations = new List<SimpleDto>();
-            features = new List<SimpleDto>();
+            features = new List<FeatureDto>();
             saveMessage = "Unable to load lookups - server API not available.";
         }
 
@@ -541,6 +623,132 @@
         }
     }
 
+    private void OnFeatureSelected(int slot, ChangeEventArgs e)
+    {
+        var name = e.Value?.ToString();
+        // clear prior warning
+        featureWarnings.Remove(slot);
+
+        if (string.IsNullOrEmpty(name))
+        {
+            // clearing selection: remove prior applied bonuses for that slot by reapplying all selected features
+            ReapplyAllFeatures();
+            SetFeatureSlot(slot, null);
+            return;
+        }
+
+        var f = features.FirstOrDefault(x => x.Name == name);
+        if (f == null)
+        {
+            featureWarnings[slot] = "Feature not found.";
+            SetFeatureSlot(slot, null);
+            return;
+        }
+
+        // check prerequisites: each required char must be <= currentStats + existing featureBonuses
+        foreach (var kv in f.PreReqChar)
+        {
+            var stat = kv.Key;
+            var req = kv.Value;
+            featureBonuses.TryGetValue(stat, out var fb);
+            currentStats.TryGetValue(stat, out var cur);
+            var effective = cur + fb;
+            if (effective < req)
+            {
+                featureWarnings[slot] = $"Prerequisite not met: {stat} >= {req} required (current {effective})";
+                SetFeatureSlot(slot, null);
+                return;
+            }
+        }
+
+        // ok apply: set slot then reapply all features to compute bonuses consistently
+        SetFeatureSlot(slot, name);
+        ReapplyAllFeatures();
+    }
+
+    private void SetFeatureSlot(int slot, string? name)
+    {
+        switch (slot)
+        {
+            case 1: feature1 = name; break;
+            case 2: feature2 = name; break;
+            case 3: feature3 = name; break;
+            case 4: feature4 = name; break;
+        }
+    }
+
+    private void ReapplyAllFeatures()
+    {
+        featureBonuses.Clear();
+        skillCounts.Clear();
+        totalFeatureMP = 0;
+        totalFeatureWounds = 0;
+
+        var selected = new[] { feature1, feature2, feature3, feature4 };
+        foreach (var fname in selected)
+        {
+            if (string.IsNullOrEmpty(fname)) continue;
+            var f = features.FirstOrDefault(x => x.Name == fname);
+            if (f == null) continue;
+            foreach (var cb in f.CharBonuses)
+            {
+                featureBonuses.TryGetValue(cb, out var cur);
+                featureBonuses[cb] = cur + 5;
+            }
+            foreach (var sk in f.Skills)
+            {
+                skillCounts.TryGetValue(sk, out var sc);
+                skillCounts[sk] = sc + 1;
+            }
+            totalFeatureMP += f.MP;
+            totalFeatureWounds += f.Wounds;
+        }
+    }
+
+    private int GetTotalWounds()
+    {
+        var baseWounds = 0;
+        if (!string.IsNullOrEmpty(selectedRace))
+        {
+            var r = races.FirstOrDefault(x => x.Name == selectedRace);
+            if (r != null) baseWounds = r.Wounds;
+        }
+        return baseWounds + totalFeatureWounds;
+    }
+
+    private int GetTotalMP()
+    {
+        return totalFeatureMP; // extend later if races grant MP
+    }
+
+    private int GetArmorPoints()
+    {
+        int armorPoints = 0;
+        if (!string.IsNullOrEmpty(selectedArmor))
+        {
+            var a = armors.FirstOrDefault(x => x.Name == selectedArmor);
+            if (a != null && a.ArmorPoints.HasValue) armorPoints = a.ArmorPoints.Value;
+        }
+        // add CON bonus
+        var con = currentStats.ContainsKey("CON") ? currentStats["CON"] : (baseStats.ContainsKey("CON") ? baseStats["CON"] : 0);
+        featureBonuses.TryGetValue("CON", out var fb);
+        var effectiveCon = con + fb;
+        armorPoints += effectiveCon / 10;
+        return armorPoints;
+    }
+
+    private string GetSkillRank(int count)
+    {
+        return count switch
+        {
+            1 => "Trained",
+            2 => "Proficient",
+            3 => "Adept",
+            >=4 => "Expert",
+            _ => ""
+        };
+    }
+
     private async Task LoadSavedFiles()
     {
         try
@@ -609,6 +817,36 @@
                 // ensure allowed features reflect selected power level
                 if (selectedPowerLevel != null) allowedFeatures = selectedPowerLevel.Features;
                 saveMessage = "Loaded.";
+                // Re-apply feature effects so the UI reflects bonuses, skills, MP and wounds
+                featureBonuses.Clear();
+                skillCounts.Clear();
+                totalFeatureMP = 0;
+                totalFeatureWounds = 0;
+                var selected = new[] { feature1, feature2, feature3, feature4 };
+                foreach (var fname in selected)
+                {
+                    if (string.IsNullOrEmpty(fname)) continue;
+                    var f = features.FirstOrDefault(x => x.Name == fname);
+                    if (f == null) continue;
+                    if (f.CharBonuses != null)
+                    {
+                        foreach (var cb in f.CharBonuses)
+                        {
+                            featureBonuses.TryGetValue(cb, out var cur);
+                            featureBonuses[cb] = cur + 5;
+                        }
+                    }
+                    if (f.Skills != null)
+                    {
+                        foreach (var sk in f.Skills)
+                        {
+                            skillCounts.TryGetValue(sk, out var sc);
+                            skillCounts[sk] = sc + 1;
+                        }
+                    }
+                    totalFeatureMP += f.MP;
+                    totalFeatureWounds += f.Wounds;
+                }
             }
         }
         catch (Exception ex)
@@ -719,4 +957,17 @@
     private class RaceDto { public string? Name { get; set; } public int Wounds { get; set; } public int MSK { get; set; } public int RSK { get; set; } public int STR { get; set; } public int AGI { get; set; } public int CON { get; set; } public int INT { get; set; } public int PER { get; set; } public int WPR { get; set; } public int CHA { get; set; } }
     private class PowerLevelDto { public string? Name { get; set; } public int Points { get; set; } public int Features { get; set; } public string? Description { get; set; } }
     private class DiagnosticsInfo { public string? SaveFolder { get; set; } public bool FolderExists { get; set; } public bool CanWrite { get; set; } public string? WriteTestError { get; set; } public string? DriveRoot { get; set; } public long AvailableFreeBytes { get; set; } public string? ServerUser { get; set; } }
+    private class SpellDto { public string? Name { get; set; } public int XpCost { get; set; } public int MP { get; set; } public int CastDifficulty { get; set; } public string? MagicSchool { get; set; } public int Range { get; set; } public int NumTargets { get; set; } }
+
+    private class FeatureDto
+    {
+        public string? Name { get; set; }
+        public int MP { get; set; }
+        public int Wounds { get; set; }
+        public string? Armor { get; set; }
+        public string? Description { get; set; }
+        public List<string> CharBonuses { get; set; } = new List<string>();
+        public Dictionary<string,int> PreReqChar { get; set; } = new Dictionary<string,int>();
+        public List<string> Skills { get; set; } = new List<string>();
+    }
 }

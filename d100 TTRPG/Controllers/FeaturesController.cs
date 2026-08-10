@@ -22,7 +22,10 @@ namespace d100_TTRPG.Controllers
                     MP = fd.MP,
                     Wounds = fd.Wounds,
                     Armor = fd.ArmorProficiency.ToString(),
-                    Description = fd.Description
+                    Description = fd.Description,
+                    CharBonuses = fd.CharBonus?.Select(c => c.ToString()).ToList() ?? new List<string>(),
+                    PreReqChar = fd.PreReqChar?.ToDictionary(kv => kv.Key.ToString(), kv => kv.Value) ?? new Dictionary<string,int>(),
+                    Skills = fd.Skills?.Select(s => s.Definition.Skill.ToString()).ToList() ?? new List<string>()
                 })
                 .OrderBy(x => x.Name)
                 .ToList();
@@ -37,6 +40,9 @@ namespace d100_TTRPG.Controllers
             public int Wounds { get; set; }
             public string? Armor { get; set; }
             public string? Description { get; set; }
+            public List<string> CharBonuses { get; set; } = new List<string>();
+            public Dictionary<string,int> PreReqChar { get; set; } = new Dictionary<string,int>();
+            public List<string> Skills { get; set; } = new List<string>();
         }
     }
 }
