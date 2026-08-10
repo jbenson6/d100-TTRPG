@@ -5,7 +5,7 @@ namespace d100_TTRPG.Data_Objects.Feature
     public class FeatureDefinition
     {
         public Features Feature { get; set; }
-        public List<Characteristics>? PreReqChar { get; set; }
+        public Dictionary<Characteristics, int>? PreReqChar { get; set; }
         public List<Characteristics>? CharBonus { get; set; }
         public int MP { get; set; }
         public int Wounds { get; set; }
@@ -16,7 +16,18 @@ namespace d100_TTRPG.Data_Objects.Feature
         public bool isSpell {  get; set; }
         public bool deityReq { get; set; }
 
-        public FeatureDefinition(Features feature, List<Characteristics>? preReqChar, List<Characteristics>? charBonus, int mP, int wounds, List<Skill.Skill>? skills, List<Talent.Talent>? talents, Enums.Armor armorProficiency, string? description, bool isSpell, bool deityReq)
+        public FeatureDefinition(
+    Features feature,
+    Dictionary<Characteristics, int>? preReqChar,
+    List<Characteristics>? charBonus,
+    int mP,
+    int wounds,
+    List<Skill.Skill>? skills,
+    List<Talent.Talent>? talents,
+    Enums.Armor armorProficiency,
+    string? description,
+    bool isSpell,
+    bool deityReq)
         {
             Feature = feature;
             PreReqChar = preReqChar;

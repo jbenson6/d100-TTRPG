@@ -2,6 +2,7 @@
 {
     public enum Armor
     {
+        None = 0,
         Padded = 1,
         Light = 2,
         Medium = 3,

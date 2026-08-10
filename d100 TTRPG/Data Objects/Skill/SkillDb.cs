@@ -352,5 +352,35 @@ namespace d100_TTRPG.Data_Objects.Skill
             false,
             "Track foes or prey, hunt, fish, forage, find or create shelter, and identify animals."
         );
+
+        public static SkillDefinition Get(Enums.Skills skill)
+        {
+            return skill switch
+            {
+                Enums.Skills.Athletics => Athletics,
+                Enums.Skills.Awareness => Awareness,
+                Enums.Skills.Command => Command,
+                Enums.Skills.Craft => Craft,
+                Enums.Skills.Deceive => Deceive,
+                Enums.Skills.Dodge => Dodge,
+                Enums.Skills.Escape => Escape,
+                Enums.Skills.Fly => Fly,
+                Enums.Skills.HandleAnimal => HandleAnimal,
+                Enums.Skills.Insight => Insight,
+                Enums.Skills.Intimidate => Intimidate,
+                Enums.Skills.Knowledge => Knowledge,
+                Enums.Skills.Linguistics => Linguistics,
+                Enums.Skills.Medicine => Medicine,
+                Enums.Skills.Navigate => Navigate,
+                Enums.Skills.Parry => Parry,
+                Enums.Skills.Perform => Perform,
+                Enums.Skills.Persuade => Persuade,
+                Enums.Skills.Ride => Ride,
+                Enums.Skills.Stealth => Stealth,
+                Enums.Skills.Survival => Survival,
+
+                _ => throw new ArgumentOutOfRangeException(nameof(skill), skill, null)
+            };
+        }
     }
 }
