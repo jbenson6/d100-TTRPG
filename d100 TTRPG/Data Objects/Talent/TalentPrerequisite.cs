@@ -10,8 +10,6 @@ namespace d100_TTRPG.Data_Objects.Talent
 
         public Skills? Skill { get; set; }
 
-        public Knowledge? Knowledge { get; set; }
-
         public Talents? Talent { get; set; }
 
         public string? WeaponGroup { get; set; }
@@ -26,7 +24,6 @@ namespace d100_TTRPG.Data_Objects.Talent
             TalentPrerequisiteType type,
             Characteristics? characteristic = null,
             Skills? skill = null,
-            Knowledge? knowledge = null,
             Talents? talent = null,
             string? weaponGroup = null,
             string? name = null,
@@ -36,7 +33,6 @@ namespace d100_TTRPG.Data_Objects.Talent
             Type = type;
             Characteristic = characteristic;
             Skill = skill;
-            Knowledge = knowledge;
             Talent = talent;
             WeaponGroup = weaponGroup;
             Name = name;

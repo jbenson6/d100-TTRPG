@@ -20,10 +20,7 @@ namespace d100_TTRPG.Controllers
                     Name = td.Trade.ToString(),
                     Description = td.Description,
                     Talent = td.Talent?.Definition?.Name ?? td.Talent?.Definition?.Talent.ToString(),
-                    Skills = td.Skills?.Select(s => s.ToString()).ToList() ?? new List<string>(),
-                    Knowledge = td.Knowledge?.Select(k => k.ToString()).ToList() ?? new List<string>(),
-                    Crafts = td.Crafts?.Select(c => c.ToString()).ToList() ?? new List<string>(),
-                    Specializations = td.Specializations ?? new List<string>()
+                    Skills = td.Skills?.Select(s => s.ToString()).ToList() ?? new List<string>()
                 })
                 .OrderBy(x => x.Name)
                 .ToList();

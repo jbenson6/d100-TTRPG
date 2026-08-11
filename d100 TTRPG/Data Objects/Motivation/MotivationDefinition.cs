@@ -11,7 +11,7 @@ namespace d100_TTRPG.Data_Objects.Motivation
 
         public Talent.Talent? Talent { get; set; }
 
-        public List<Skill.Skill>? Skills { get; set; }
+        public List<Enums.Skills>? Skills { get; set; }
 
         public string? AdditionalNotes { get; set; }
 
@@ -19,7 +19,7 @@ namespace d100_TTRPG.Data_Objects.Motivation
             Enums.Motivations motivation,
             string description,
             Talent.Talent? talent = null,
-            List<Skill.Skill>? skills = null,
+            List<Enums.Skills>? skills = null,
             string? additionalNotes = null)
         {
             Motivation = motivation;

@@ -19,7 +19,7 @@ namespace d100_TTRPG.Controllers
                     Name = v.GetType().GetProperty("ArmorType")?.GetValue(v)?.ToString() ?? v.ToString(),
                     ArmorPoints = v.GetType().GetProperty("ArmorPoints")?.GetValue(v)
                 })
-                .OrderBy(x => x.Name)
+                .OrderBy(x => x.ArmorPoints)
                 .ToList();
 
             return Ok(items);

@@ -88,7 +88,12 @@ namespace d100_TTRPG.Data_Objects.Feature
 
                 new List<Skill.Skill>
                 {
-                    S(Enums.Skills.Knowledge),
+                    S(Enums.Skills.Arcana),
+                    S(Enums.Skills.Engineering),
+                    S(Enums.Skills.History),
+                    S(Enums.Skills.Local),
+                    S(Enums.Skills.Nature),
+                    S(Enums.Skills.Religion),
                     S(Enums.Skills.Linguistics)
                 },
 
@@ -152,7 +157,7 @@ namespace d100_TTRPG.Data_Objects.Feature
                 new List<Skill.Skill>
                 {
                     S(Enums.Skills.Awareness),
-                    S(Enums.Skills.Knowledge)
+                    S(Enums.Skills.Arcana)
                 },
 
                 new List<Talent.Talent>(),
@@ -179,7 +184,8 @@ namespace d100_TTRPG.Data_Objects.Feature
 
                 new List<Skill.Skill>
                 {
-                    S(Enums.Skills.Knowledge),
+                    S(Enums.Skills.Arcana),
+                    S(Enums.Skills.Religion)
                 },
 
                 new List<Talent.Talent>(),
@@ -244,7 +250,7 @@ namespace d100_TTRPG.Data_Objects.Feature
 
                 new List<Skill.Skill>
                 {
-                    S(Enums.Skills.Knowledge)
+                    S(Enums.Skills.Arcana)
                 },
 
                 new List<Talent.Talent>(),
@@ -275,7 +281,7 @@ namespace d100_TTRPG.Data_Objects.Feature
                 {
                     S(Enums.Skills.Awareness),
                     S(Enums.Skills.Insight),
-                    S(Enums.Skills.Knowledge)
+                    S(Enums.Skills.Religion)
                 },
 
                 new List<Talent.Talent>(),
@@ -310,7 +316,7 @@ namespace d100_TTRPG.Data_Objects.Feature
                 {
                     S(Enums.Skills.Awareness),
                     S(Enums.Skills.Insight),
-                    S(Enums.Skills.Knowledge)
+                    S(Enums.Skills.Arcana)
                 },
 
                 new List<Talent.Talent>(),
@@ -339,7 +345,7 @@ namespace d100_TTRPG.Data_Objects.Feature
 
                 new List<Skill.Skill>
                 {
-                    S(Enums.Skills.Knowledge),
+                    S(Enums.Skills.Arcana),
                     S(Enums.Skills.Parry)
                 },
 
@@ -371,7 +377,7 @@ namespace d100_TTRPG.Data_Objects.Feature
 
                 new List<Skill.Skill>
                 {
-                    S(Enums.Skills.Knowledge)
+                    S(Enums.Skills.Arcana)
                 },
 
                 new List<Talent.Talent>(),
@@ -403,8 +409,9 @@ namespace d100_TTRPG.Data_Objects.Feature
 
                 new List<Skill.Skill>
                 {
-                    S(Enums.Skills.Craft),
-                    S(Enums.Skills.Knowledge)
+                    S(Enums.Skills.Alchemy),
+                    S(Enums.Skills.Arcana),
+                    S(Enums.Skills.Nature)
                 },
 
                 new List<Talent.Talent>(),
@@ -433,8 +440,7 @@ namespace d100_TTRPG.Data_Objects.Feature
 
                 new List<Skill.Skill>
                 {
-                    S(Enums.Skills.Craft),
-                    S(Enums.Skills.Knowledge)
+                    S(Enums.Skills.Arcana)
                 },
 
                 new List<Talent.Talent>(),
@@ -462,7 +468,8 @@ namespace d100_TTRPG.Data_Objects.Feature
 
                 new List<Skill.Skill>
                 {
-                    S(Enums.Skills.Knowledge),
+                    S(Enums.Skills.History),
+                    S(Skills.Religion),
                     S(Enums.Skills.Persuade)
                 },
 
@@ -574,7 +581,7 @@ namespace d100_TTRPG.Data_Objects.Feature
 
                 new List<Skill.Skill>
                 {
-                    S(Enums.Skills.Knowledge),
+                    S(Enums.Skills.Religion),
                     S(Enums.Skills.Medicine),
                     S(Enums.Skills.Persuade)
                 },
@@ -642,8 +649,9 @@ namespace d100_TTRPG.Data_Objects.Feature
                 new List<Skill.Skill>
                 {
                     S(Enums.Skills.Awareness),
-                    S(Enums.Skills.Craft),
-                    S(Enums.Skills.Knowledge)
+                    S(Enums.Skills.Alchemy),
+                    S(Enums.Skills.Arcana),
+                    S(Skills.Nature)
                 },
 
                 new List<Talent.Talent>(),
@@ -673,7 +681,7 @@ namespace d100_TTRPG.Data_Objects.Feature
                 new List<Skill.Skill>
                 {
                     S(Enums.Skills.HandleAnimal),
-                    S(Enums.Skills.Knowledge),
+                    S(Enums.Skills.Nature),
                     S(Enums.Skills.Survival)
                 },
 
@@ -703,7 +711,7 @@ namespace d100_TTRPG.Data_Objects.Feature
                 new List<Skill.Skill>
                 {
                     S(Enums.Skills.HandleAnimal),
-                    S(Enums.Skills.Knowledge)
+                    S(Enums.Skills.Nature)
                 },
 
                 new List<Talent.Talent>(),
@@ -732,7 +740,6 @@ namespace d100_TTRPG.Data_Objects.Feature
                 new List<Skill.Skill>
                 {
                     S(Enums.Skills.Dodge),
-                    S(Enums.Skills.Knowledge),
                     S(Enums.Skills.Stealth)
                 },
 
@@ -762,7 +769,7 @@ namespace d100_TTRPG.Data_Objects.Feature
                 new List<Skill.Skill>
                 {
                     S(Enums.Skills.Insight),
-                    S(Enums.Skills.Knowledge),
+                    S(Enums.Skills.Arcana),
                     S(Enums.Skills.Medicine)
                 },
 
@@ -854,7 +861,7 @@ namespace d100_TTRPG.Data_Objects.Feature
                 new List<Skill.Skill>
                 {
                     S(Enums.Skills.Command),
-                    S(Enums.Skills.Knowledge),
+                    S(Enums.Skills.Religion),
                     S(Enums.Skills.Persuade)
                 },
 
@@ -917,7 +924,7 @@ namespace d100_TTRPG.Data_Objects.Feature
 
                 new List<Skill.Skill>
                 {
-                    S(Enums.Skills.Knowledge)
+                    S(Enums.Skills.Arcana)
                 },
 
                 new List<Talent.Talent>(),
@@ -1049,7 +1056,8 @@ namespace d100_TTRPG.Data_Objects.Feature
                 new List<Skill.Skill>
                 {
                     S(Enums.Skills.HandleAnimal),
-                    S(Enums.Skills.Knowledge)
+                    S(Enums.Skills.Arcana),
+                    S(Skills.Nature)
                 },
 
                 new List<Talent.Talent>(),

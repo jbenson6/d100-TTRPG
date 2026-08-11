@@ -23,6 +23,46 @@
         Ride = 19,
         Stealth = 20,
         Survival = 21,
-        QuickDraw = 22
+        QuickDraw = 22,
+
+        //Knowledge
+        Arcana = 23,
+        Engineering = 24,
+        History = 25,
+        Local = 26,
+        Nature = 27,
+        Religion = 28,
+
+        //Navigation
+        Sea = 29,
+        Land = 30,
+
+        //Craft
+        Alchemy = 31,
+        ArmsAndArmor = 32,
+        BonesAndHides = 33,
+        BowsAndArrows = 34,
+        Glass = 35,
+        Metal = 36,
+        Traps = 37,
+        Wood = 38,
+
+        //Linguistics
+        Abyssal = 39,
+        Celestial = 40,
+        Djinni = 41,
+        Draconic = 42,
+        Elven = 43,
+        Enkidian = 44,
+        Infernal = 45,
+        Ishi = 46,
+        Kamanali = 47,
+        Lycan = 48,
+        Orcish = 49,
+        Saurian = 50,
+        Scytho = 51,
+        Sylvan = 52,
+        Thessian = 53,
+        Taheeli = 54
     }
 }

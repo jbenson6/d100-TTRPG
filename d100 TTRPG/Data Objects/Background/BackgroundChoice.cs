@@ -2,8 +2,7 @@
 {
     public enum BackgroundChoiceType
     {
-        Skill = 1,
-        Knowledge = 2
+        Skill = 1
     }
 
     public class BackgroundChoice
@@ -14,18 +13,18 @@
 
         public string? Description { get; set; }
 
-        public Enums.Knowledge? KnowledgeSubskill { get; set; }
+        public Enums.Skills? Skill { get; set; }
 
         public BackgroundChoice(
             BackgroundChoiceType type,
             int amount,
             string? description = null,
-            Enums.Knowledge? knowledgeSubskill = null)
+            Enums.Skills? skill = null)
         {
             Type = type;
             Amount = amount;
             Description = description;
-            KnowledgeSubskill = knowledgeSubskill;
+            Skill = skill;
         }
     }
 }

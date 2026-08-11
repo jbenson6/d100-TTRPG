@@ -21,15 +21,6 @@ namespace d100_TTRPG.Data_Objects.Background
                 SkillDb.Command
                 },
 
-                new List<BackgroundChoice>
-                {
-                new BackgroundChoice(
-                    BackgroundChoiceType.Knowledge,
-                    2,
-                    "Choose any two Knowledge specializations."
-                )
-                },
-
                 "You have a strong connection to your noble house, beginning with a " +
                 "Friendly disposition from any other member of the house or staff."
             );
@@ -52,8 +43,6 @@ namespace d100_TTRPG.Data_Objects.Background
                 SkillDb.Stealth
                 },
 
-                new List<BackgroundChoice>(),
-
                 ""
             );
 
@@ -74,23 +63,6 @@ namespace d100_TTRPG.Data_Objects.Background
                 SkillDb.Survival
                 },
 
-                new List<BackgroundChoice>
-                {
-                new BackgroundChoice(
-                    BackgroundChoiceType.Knowledge,
-                    1,
-                    "Knowledge [Nature].",
-                    Enums.Knowledge.Nature
-                ),
-
-                new BackgroundChoice(
-                    BackgroundChoiceType.Knowledge,
-                    1,
-                    "Knowledge [History].",
-                    Enums.Knowledge.History
-                )
-                },
-
                 ""
             );
 
@@ -106,22 +78,6 @@ namespace d100_TTRPG.Data_Objects.Background
                 TalentDb.SkillFocus,
 
                 new List<Skill.SkillDefinition>(),
-
-                new List<BackgroundChoice>
-                {
-                new BackgroundChoice(
-                    BackgroundChoiceType.Knowledge,
-                    1,
-                    "Knowledge [Local].",
-                    Enums.Knowledge.Local
-                ),
-
-                new BackgroundChoice(
-                    BackgroundChoiceType.Skill,
-                    1,
-                    "Choose any one skill for Skill Focus."
-                )
-                },
 
                 ""
             );

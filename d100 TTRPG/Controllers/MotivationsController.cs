@@ -20,7 +20,6 @@ namespace d100_TTRPG.Controllers
                     Name = md.Motivation.ToString(),
                     Description = md.Description,
                     Talent = md.Talent?.Definition?.Name ?? md.Talent?.Definition?.Talent.ToString(),
-                    Skills = md.Skills?.Select(s => s.Definition.Skill.ToString()).ToList() ?? new List<string>(),
                     AdditionalNotes = md.AdditionalNotes
                 })
                 .OrderBy(x => x.Name)

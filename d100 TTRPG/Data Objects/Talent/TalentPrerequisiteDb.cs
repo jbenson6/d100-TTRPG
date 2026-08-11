@@ -32,16 +32,6 @@ namespace d100_TTRPG.Data_Objects.Talent
                 rank: rank);
         }
 
-        public static TalentPrerequisite Knowledge(
-            Knowledge knowledge,
-            SkillRank rank)
-        {
-            return new TalentPrerequisite(
-                TalentPrerequisiteType.Knowledge,
-                knowledge: knowledge,
-                rank: rank);
-        }
-
         public static TalentPrerequisite Talent(
             Talents talent)
         {

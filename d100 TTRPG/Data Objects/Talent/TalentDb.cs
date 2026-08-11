@@ -460,7 +460,7 @@ This talent may be taken multiple times, each time you select a new maneuver."
                     TalentPrerequisiteDb.MP(5),
                     TalentPrerequisiteDb.Stat(Characteristics.INT, 40),
                     TalentPrerequisiteDb.Stat(Characteristics.WPR, 35),
-                    TalentPrerequisiteDb.Knowledge(Knowledge.Arcana, SkillRank.Proficient)
+                    TalentPrerequisiteDb.Skill(Skills.Arcana, SkillRank.Adept)
                 },
                 @"You can imbue an object with the effects of a spell that would otherwise end, such as a sword with Elemental Blast to grant it additional fire damage, or a stone with Light to make it continuously glow.
 
@@ -601,7 +601,7 @@ Cast an illusion, such as making a cave entrance look like stone covered in vine
                 {
                     TalentPrerequisiteDb.MP(2),
                     TalentPrerequisiteDb.Stat(Characteristics.INT, 40),
-                    TalentPrerequisiteDb.Knowledge(Knowledge.Arcana, SkillRank.Proficient)
+                    TalentPrerequisiteDb.Skill(Skills.Arcana, SkillRank.Proficient)
                 },
                 @"Choose a school of magic. Gain +10 on all tests you make spells of that school."
             );
@@ -617,7 +617,7 @@ Cast an illusion, such as making a cave entrance look like stone covered in vine
                     TalentPrerequisiteDb.MP(4),
                     TalentPrerequisiteDb.Stat(Characteristics.INT, 45),
                     TalentPrerequisiteDb.Talent(Talents.SpellFocus),
-                    TalentPrerequisiteDb.Knowledge(Knowledge.Arcana, SkillRank.Proficient)
+                    TalentPrerequisiteDb.Skill(Skills.Arcana, SkillRank.Proficient)
                 },
                 @"Whenever a target makes a test for a spell of the chosen school, including reaction tests to avoid it, you may have them take an additional +10 or -10 on that test.
 

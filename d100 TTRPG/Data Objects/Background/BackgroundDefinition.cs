@@ -12,8 +12,6 @@ namespace d100_TTRPG.Data_Objects.Background
 
         public List<Skill.SkillDefinition> Skills { get; set; }
 
-        public List<BackgroundChoice> Choices { get; set; }
-
         public string AdditionalNotes { get; set; }
 
         public BackgroundDefinition(
@@ -21,14 +19,12 @@ namespace d100_TTRPG.Data_Objects.Background
             string? description,
             Talent.TalentDefinition? talent,
             List<Skill.SkillDefinition>? skills,
-            List<BackgroundChoice>? choices,
             string additionalNotes)
         {
             Background = background;
             Description = description;
             Talent = talent;
             Skills = skills ?? new List<Skill.SkillDefinition>();
-            Choices = choices ?? new List<BackgroundChoice>();
             AdditionalNotes = additionalNotes;
         }
     }

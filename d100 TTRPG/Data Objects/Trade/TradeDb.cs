@@ -10,9 +10,9 @@
             new TradeDefinition(
                 Enums.Trades.Acolyte,
                 "You have spent much time working at a shrine, temple, with monks, or in a cult.",
-                knowledge: new List<Enums.Knowledge>
+                skills: new List<Enums.Skills>
                 {
-                    Enums.Knowledge.Religion
+                    Enums.Skills.Religion
                 }
             );
 
@@ -24,15 +24,7 @@
         public static readonly TradeDefinition Artisan =
             new TradeDefinition(
                 Enums.Trades.Artisan,
-                "You are skilled with creating things with your hands, from smithing, carpentry, painting, sculpting, or another craft.",
-                skills: new List<Enums.Skills>
-                {
-                    Enums.Skills.Craft
-                },
-                specializations: new List<string>
-                {
-                    "Any One"
-                }
+                "You are skilled with creating things with your hands, from smithing, carpentry, painting, sculpting, or another craft."
             );
 
 
@@ -46,11 +38,8 @@
                 "You have spent your life working within an organization, whether that be a noble hierarchy as an attendant, a merchant company, or in a government agency.",
                 skills: new List<Enums.Skills>
                 {
-                    Enums.Skills.Linguistics
-                },
-                knowledge: new List<Enums.Knowledge>
-                {
-                    Enums.Knowledge.History
+                    Enums.Skills.Linguistics,
+                    Enums.Skills.History
                 },
                 additionalNotes:
                     "You have a positive connection with a given noble family, company, or government agency."
@@ -67,13 +56,8 @@
                 "You are familiar with hunting and catching wildlife in order to feed yourself and others.",
                 skills: new List<Enums.Skills>
                 {
-                    Enums.Skills.Survival
-                },
-                crafts: new List<Enums.Craft>
-                { Enums.Craft.Traps},
-                specializations: new List<string>
-                {
-                    "Craft [Traps]"
+                    Enums.Skills.Survival,
+                    Enums.Skills.Traps
                 }
             );
 
@@ -88,11 +72,7 @@
                 "You live on the open sea, fishing, trading, in the Navy or as a pirate. You are never seasick and enjoy the untamable nature of the mighty waters.",
                 skills: new List<Enums.Skills>
                 {
-                    Enums.Skills.Navigate
-                },
-                specializations: new List<string>
-                {
-                    "Sea"
+                    Enums.Skills.Sea
                 }
             );
 
@@ -104,15 +84,7 @@
         public static readonly TradeDefinition Scholar =
             new TradeDefinition(
                 Enums.Trades.Scholar,
-                "You have dedicated yourself to acquiring a greater understanding of the world you live in.",
-                knowledge: new List<Enums.Knowledge>
-                {
-                    // Any one Knowledge skill.
-                },
-                specializations: new List<string>
-                {
-                    "Knowledge [Any One] [P]"
-                }
+                "You have dedicated yourself to acquiring a greater understanding of the world you live in."
             );
 
 
@@ -124,9 +96,9 @@
             new TradeDefinition(
                 Enums.Trades.Servant,
                 "You have humbly cared for a noble family, a wealthy house, or worked in the service industry.",
-                knowledge: new List<Enums.Knowledge>
+                skills: new List<Enums.Skills>
                 {
-                    Enums.Knowledge.Local
+                    Enums.Skills.Local
                 },
                 additionalNotes:
                     "You have experience working at a particular location [GM Discretion], and are associated with the other members of the house or business."
