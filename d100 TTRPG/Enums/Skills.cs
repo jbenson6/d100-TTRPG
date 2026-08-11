@@ -23,6 +23,7 @@
         Ride = 19,
         Stealth = 20,
         Survival = 21,
+        Acrobatics = 22,
 
         //Knowledge
         Arcana = 23,
@@ -62,6 +63,9 @@
         Scytho = 51,
         Sylvan = 52,
         Thessian = 53,
-        Taheeli = 54
+        Taheeli = 54,
+
+        //Missed Skills
+        Geography = 55
     }
 }

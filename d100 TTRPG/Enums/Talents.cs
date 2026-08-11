@@ -62,7 +62,10 @@
         WeaponsExpertRanged = 58,
         WeaponFocus = 59,
         WeaponProficiency = 60,
-        WorldlyKnowledge = 61
+        WorldlyKnowledge = 61,
+        DeadeyeShot = 62,
+        SureStrike = 63,
+        Minion = 64
     }
 
     public enum TalentChains

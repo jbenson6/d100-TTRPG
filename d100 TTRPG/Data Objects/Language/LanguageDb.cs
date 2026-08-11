@@ -67,5 +67,9 @@ namespace d100_TTRPG.Data_Objects.Language
         public static readonly LanguageDefinition Taheeli = new LanguageDefinition(
             Languages.Taheeli,
             "The language of Nubians.");
+
+        public static readonly LanguageDefinition Giant = new LanguageDefinition(
+            Languages.Giant,
+            "The language of Giants.");
     }
 }

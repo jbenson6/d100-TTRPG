@@ -4,6 +4,7 @@ namespace d100_TTRPG.Data_Objects.Spell
 {
     public class SpellDefinition
     {
+        public Enums.Spells Spell { get; set; }
         public MagicSchools MagicSchool { get; set; }
         public int XpCost { get; set; }
         public Characteristics TestChar {  get; set; }

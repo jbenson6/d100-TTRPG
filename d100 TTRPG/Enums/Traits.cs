@@ -39,6 +39,15 @@
         Unbalanced = 32,
         Unwieldy = 33,
         Snare = 34,
-        Toxic = 35
+        Toxic = 35,
+
+        // Tier 1 racial traits
+        Scent = 36,
+        Tail = 37,
+        Wings = 38,
+        Flight = 39,
+        Horns = 40,
+        Sleepless = 41,
+        HybridForm = 42
     }
 }

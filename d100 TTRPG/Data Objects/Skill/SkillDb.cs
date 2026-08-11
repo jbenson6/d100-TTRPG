@@ -401,6 +401,25 @@ namespace d100_TTRPG.Data_Objects.Skill
             "Navigate across land using maps, landmarks, terrain, and other navigational tools."
         );
 
+        public static readonly SkillDefinition Acrobatics = new SkillDefinition(
+            Enums.Skills.Acrobatics,
+            new List<Enums.Characteristics>
+            {
+                Enums.Characteristics.AGI
+            },
+            false,
+            "Acrobatics"
+        );
+
+        public static readonly SkillDefinition Geography = new SkillDefinition(
+            Enums.Skills.Geography,
+            new List<Enums.Characteristics>
+            {
+                Enums.Characteristics.INT
+            },
+            false,
+            "Geography"
+        );
 
         // ============================================================
         // GET
@@ -431,6 +450,7 @@ namespace d100_TTRPG.Data_Objects.Skill
                 Enums.Skills.Ride => Ride,
                 Enums.Skills.Stealth => Stealth,
                 Enums.Skills.Survival => Survival,
+                Enums.Skills.Acrobatics => Acrobatics,
 
                 // Knowledge
                 Enums.Skills.Arcana => Arcana,
@@ -453,6 +473,8 @@ namespace d100_TTRPG.Data_Objects.Skill
                 // Navigation
                 Enums.Skills.Sea => Sea,
                 Enums.Skills.Land => Land,
+
+                Enums.Skills.Geography => Geography,
 
                 _ => throw new ArgumentOutOfRangeException(
                     nameof(skill),

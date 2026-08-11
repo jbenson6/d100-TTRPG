@@ -17,6 +17,7 @@
         Scytho = 13, 
         Sylvan = 14,
         Thessian = 15,
-        Taheeli = 16
+        Taheeli = 16,
+        Giant = 17
     }
 }

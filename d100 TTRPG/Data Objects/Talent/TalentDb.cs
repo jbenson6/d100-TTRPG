@@ -840,6 +840,42 @@ This talent may be taken multiple times, each time choosing to stack the same we
                 @"Reduce the penalty for any untrained Knowledge tests from -20 to -10. If you have the Bardic Knowledge feature, instead you take no penalty on untrained Knowledge tests and gain +10 on all knowledge tests."
             );
 
+        public static readonly TalentDefinition Minion =
+            new TalentDefinition(
+                Talents.Minion,
+                "Minion",
+                2,
+                false,
+                new List<TalentPrerequisite>
+                {
+                },
+                @"Minion"
+            );
+
+        public static readonly TalentDefinition DeadeyeShot =
+            new TalentDefinition(
+                Talents.DeadeyeShot,
+                "DeadeyeShot",
+                2,
+                true,
+                new List<TalentPrerequisite>
+                {
+                },
+                @"DeadeyeShot"
+            );
+
+        public static readonly TalentDefinition SureStrike =
+            new TalentDefinition(
+                Talents.SureStrike,
+                "SureStrike",
+                2,
+                true,
+                new List<TalentPrerequisite>
+                {
+                },
+                @"SureStrike"
+            );
+
         public static TalentDefinition Get(Enums.Talents talent)
         {
             return talent switch

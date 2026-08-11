@@ -305,5 +305,63 @@
             true,
             "Difficulty steps / Toxic damage"
         );
+
+        public static readonly TraitDefinition Tail = new TraitDefinition(
+            Enums.Traits.Tail,
+            TraitType.Creature,
+            "Tail",
+            false,
+            ""
+        );
+
+        public static readonly TraitDefinition Sleepless = new TraitDefinition(
+            Enums.Traits.Sleepless,
+            TraitType.Creature,
+            "Sleepless",
+            false,
+            ""
+        );
+
+        public static readonly TraitDefinition Scent = new TraitDefinition(
+            Enums.Traits.Scent,
+           TraitType.Creature,
+            "Scent",
+            false,
+            ""
+        );
+
+        public static readonly TraitDefinition Flight = new TraitDefinition(
+            Enums.Traits.Flight,
+            TraitType.Creature,
+            "Flight",
+            false,
+            ""
+        );
+
+        public static readonly TraitDefinition Wings = new TraitDefinition(
+            Enums.Traits.Wings,
+            TraitType.Creature,
+            "Wings",
+            false,
+            ""
+        );
+
+        public static readonly TraitDefinition Horns = new TraitDefinition(
+            Enums.Traits.Horns,
+            TraitType.Creature,
+            "Horns",
+            false,
+            ""
+        );
+
+        public static readonly TraitDefinition HybridForm = new TraitDefinition(
+            Enums.Traits.HybridForm,
+            TraitType.Creature,
+            "HybridForm",
+            false,
+            ""
+        );
+
+
     }
 }
