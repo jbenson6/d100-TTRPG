@@ -10,7 +10,10 @@ namespace d100_TTRPG.Controllers
         [HttpGet]
         public IActionResult Get()
         {
-            var fields = typeof(MotivationDb).GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+            var fields = typeof(MotivationDb).GetFields(
+                System.Reflection.BindingFlags.Public |
+                System.Reflection.BindingFlags.Static);
+
             var items = fields
                 .Select(f => f.GetValue(null))
                 .Where(v => v != null)
@@ -19,7 +22,16 @@ namespace d100_TTRPG.Controllers
                 {
                     Name = md.Motivation.ToString(),
                     Description = md.Description,
-                    Talent = md.Talent?.Definition?.Name ?? md.Talent?.Definition?.Talent.ToString(),
+
+                    // Return the motivation skills so the Blazor UI
+                    // can add them to skillCounts.
+                    Skills = md.Skills?
+                        .Select(s => s.ToString())
+                        .ToList(),
+
+                    Talent = md.Talent?.Definition?.Name
+                        ?? md.Talent?.Definition?.Talent.ToString(),
+
                     AdditionalNotes = md.AdditionalNotes
                 })
                 .OrderBy(x => x.Name)
