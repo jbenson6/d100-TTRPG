@@ -246,8 +246,12 @@ namespace d100_TTRPG.Controllers
 
             // Bonus skills granted by the three character selections.
             public List<string> BackgroundSkills { get; set; } = new();
+            public List<string>? BackgroundSkillChoices { get; set; } = new();
             public List<string> TradeSkills { get; set; } = new();
+            public List<string>? TradeSkillChoices { get; set; } = new();
+
             public List<string> MotivationSkills { get; set; } = new();
+            public List<string>? MotivationSkillChoices { get; set; } = new();
 
             // Spells actually learned by the character.
             public List<string> LearnedSpells { get; set; } = new();

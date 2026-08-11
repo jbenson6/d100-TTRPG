@@ -975,7 +975,7 @@
 
 @code {
 
-private List<LocationDto> locations = new();
+    private List<LocationDto> locations = new();
     private List<string> raceOptions = new();
     private List<SimpleDto> backgrounds = new();
     private List<SimpleDto> trades = new();
@@ -1575,11 +1575,17 @@ private List<LocationDto> locations = new();
             BackgroundSkills =
                 GetLookupSkills(backgrounds, selectedBackground),
 
+            BackgroundSkillChoices = GetBackgroundChoices(),
+
             TradeSkills =
                 GetLookupSkills(trades, selectedTrade),
 
+            TradeSkillChoices = GetTradeChoices(),
+
             MotivationSkills =
                 GetLookupSkills(motivations, selectedMotivation),
+
+            MotivationSkillChoices = GetMotivationChoices(),
 
             AristocratSkill1 =
                 selectedAristocratSkill1,
@@ -1714,6 +1720,43 @@ private List<LocationDto> locations = new();
                 .Where(s => !string.IsNullOrWhiteSpace(s))
                 .ToList()
             ?? new List<string>();
+    }
+
+    private List<string> GetBackgroundChoices()
+    {
+        switch (selectedBackground)
+        {
+            case "Aristocrat":
+                return new List<string>() { selectedAristocratSkill1, selectedAristocratSkill2 };
+            default:
+                return null;
+        }
+    }
+
+    private List<string> GetTradeChoices()
+    {
+        switch (selectedTrade)
+        {
+            case "Artisan":
+                return new List<string>() { selectedArtisanSkill };
+            case "Scholar":
+                return new List<string>() { selectedScholarSkill };
+            default:
+                return null;
+        }
+    }
+
+    private List<string> GetMotivationChoices()
+    {
+        switch (selectedMotivation)
+        {
+            case "Pleasure":
+                return new List<string>() { selectedPleasureSkill };
+                break;
+            default:
+                return null;
+                break;
+        }
     }
 
     // =================================================
@@ -2755,20 +2798,41 @@ private List<LocationDto> locations = new();
                     selectedAristocratSkill1 = null;
                     selectedAristocratSkill2 = null;
                 }
+                else
+                {
+                    //will not be more than 2
+                    selectedAristocratSkill1 = dto.BackgroundSkillChoices[0];
+                    selectedAristocratSkill2 = dto.BackgroundSkillChoices[1];
+                }
 
                 if (selectedTrade != "Scholar")
                 {
                     selectedScholarSkill = null;
+                }
+                else
+                {
+                    //will not be more than 1
+                    selectedScholarSkill = dto.TradeSkillChoices[0];
                 }
 
                 if (selectedTrade != "Artisan")
                 {
                     selectedArtisanSkill = null;
                 }
+                else
+                {
+                    //will not be more than 1
+                    selectedArtisanSkill = dto.TradeSkillChoices[0];
+                }
 
                 if (selectedMotivation != "Pleasure")
                 {
                     selectedPleasureSkill = null;
+                }
+                else
+                {
+                    //will not be more than 1
+                    selectedPleasureSkill = dto.MotivationSkillChoices[0];
                 }
 
                 feature1 =
@@ -3075,10 +3139,16 @@ private List<LocationDto> locations = new();
         public List<string> Skills { get; set; } = new();
 
         public List<string> BackgroundSkills { get; set; } = new();
+        public List<string>? BackgroundSkillChoices { get; set; } = new();
+
 
         public List<string> TradeSkills { get; set; } = new();
+        public List<string>? TradeSkillChoices { get; set; } = new();
+
 
         public List<string> MotivationSkills { get; set; } = new();
+        public List<string>? MotivationSkillChoices { get; set; } = new();
+
 
         // -------------------------------------------------
         // Spells
