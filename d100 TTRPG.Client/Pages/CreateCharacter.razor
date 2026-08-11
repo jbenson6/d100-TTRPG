@@ -121,8 +121,7 @@
                             <div>
 
                                 <input type="checkbox"
-                                       @onchange="e => OnSpellToggled(s.Name, s.XpCost, e)"
-                                       checked="@(learnedSpells.Contains(s.Name))" />
+                                       @onchange="e => OnSpellToggled(s.Name, s.XpCost, e)"/>
 
                                 <label class="ms-1">
                                     @s.Name (@s.XpCost xp)
@@ -1020,9 +1019,6 @@
 
     private Dictionary<string, int> featureBonuses = new();
     private Dictionary<string, int> skillCounts = new();
-
-    // Talents are derived from selected
-    // background, trade, motivation and features.
     private List<string> talents = new();
 
     private int totalFeatureWounds = 0;
@@ -2037,6 +2033,7 @@
         featureBonuses.Clear();
         skillCounts.Clear();
         talents.Clear();
+        learnedSpells.Clear();
 
         totalFeatureMP = 0;
         totalFeatureWounds = 0;
@@ -2064,6 +2061,14 @@
                 if (!string.IsNullOrWhiteSpace(talent))
                 {
                     talents.Add(talent);
+                }
+            }
+
+            foreach (var spell in race.Spells)
+            {
+                if (!string.IsNullOrEmpty(spell))
+                {
+                    learnedSpells.Add(spell);
                 }
             }
         }
@@ -2126,6 +2131,19 @@
                 {
                     talents.Add(talent);
                 }
+            }
+
+            switch (fname)
+            {
+                case "BardicPerformance": 
+                case "Channel": 
+                case "Counterspell":
+                case "EldritchBlast": 
+                case "LayOnHands": 
+                case "Purify":
+                case "Smite":
+                    learnedSpells.Add(fname);
+                    break;
             }
 
             totalFeatureMP += f.MP;
