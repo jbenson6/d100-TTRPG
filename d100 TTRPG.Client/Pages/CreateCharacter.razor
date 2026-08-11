@@ -16,6 +16,36 @@
             {
                 <option value="@p.Name" selected="@(selectedPowerLevel != null && p.Name == selectedPowerLevel.Name)">@p.Name (@p.Points pts, @p.Features features)</option>
             }
+
+    // incorporate skills/talents from background/trade/motivation when selected
+    private void ApplyLookupBonuses()
+    {
+        // Clear previous
+        skillCounts.Clear();
+
+        var lookups = new[] { selectedBackground, selectedTrade, selectedMotivation };
+        foreach (var name in lookups)
+        {
+            if (string.IsNullOrEmpty(name)) continue;
+            var b = backgrounds.FirstOrDefault(x => x.Name == name);
+            if (b != null && b.Skills != null)
+            {
+                foreach (var sk in b.Skills)
+                {
+                    skillCounts.TryGetValue(sk, out var sc);
+                    skillCounts[sk] = sc + 1;
+                }
+            }
+            if (b != null && !string.IsNullOrEmpty(b.Talent))
+            {
+                // mark talent as a learned talent - not implemented UI for talents yet
+            }
+            if (b != null && b.Traits != null)
+            {
+                // traits can be shown elsewhere
+            }
+        }
+    }
         </select>
     </div>
 
@@ -49,12 +79,38 @@
         <h6>Spells available</h6>
         @if (spells != null && spells.Any())
         {
-            <ul>
-                @foreach (var s in spells.Where(s => s.MP <= GetTotalMP()).OrderBy(s => s.Name))
-                {
-                    <li>@s.Name @if (s.XpCost == 0) { <span class="text-success">(free)</span> }</li>
-                }
-            </ul>
+            <div class="mb-2">
+                <button class="btn btn-sm btn-outline-secondary me-2" @onclick="AddXP">+50 XP</button>
+                <span>XP pool: <strong>@xpPool</strong></span>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Available</h6>
+                    @foreach (var s in spells.Where(s => s.MP <= GetTotalMP()).OrderBy(s => s.Name))
+                    {
+                        <div>
+                            <input type="checkbox" @onchange="e => OnSpellToggled(s.Name, s.XpCost, e)" checked="@(learnedSpells.Contains(s.Name))" />
+                            <label class="ms-1">@s.Name (@s.XpCost xp)</label>
+                        </div>
+                    }
+                </div>
+                <div class="col-md-6">
+                    <h6>Learned</h6>
+                    @if (learnedSpells.Any())
+                    {
+                        <ul>
+                            @foreach (var ls in learnedSpells)
+                            {
+                                <li>@ls</li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <div class="text-muted">No learned spells.</div>
+                    }
+                </div>
+            </div>
         }
         else
         {
@@ -252,7 +308,7 @@
                     <label class="form-label">Main hand</label>
                     <select class="form-select" @onchange="OnMainWeaponChanged">
                         <option value="">(Select main weapon)</option>
-                        @foreach (var w in weapons)
+                        @foreach (var w in weapons.Where(w => !(w.Hands?.Contains("Shield") ?? false) && !(w.Hands?.Contains("TowerShield") ?? false) && !(w.Hands?.Contains("Armor") ?? false)))
                         {
                             <option value="@w.Name" selected="@(w.Name==selectedMainWeapon)">@w.Name (@w.Hands / @w.Range)</option>
                         }
@@ -370,6 +426,7 @@
     private string? customBasePath;
     private string? currentSaveFolder;
     private List<SpellDto> spells = new();
+    private int xpPool = 1000;
 
     private bool lookupsLoaded = false;
 
@@ -623,6 +680,39 @@
         }
     }
 
+    private void OnSpellToggled(string spellName, int xpCost, ChangeEventArgs e)
+    {
+        var isChecked = e.Value?.ToString() == "true" || e.Value?.ToString() == "on";
+        if (isChecked)
+        {
+            if (xpPool >= xpCost)
+            {
+                xpPool -= xpCost;
+                learnedSpells.Add(spellName);
+            }
+            else
+            {
+                // insufficient xp
+            }
+        }
+        else
+        {
+            // uncheck -> refund
+            if (learnedSpells.Contains(spellName))
+            {
+                xpPool += xpCost;
+                learnedSpells.Remove(spellName);
+            }
+        }
+    }
+
+    private void AddXP()
+    {
+        xpPool += 50;
+    }
+
+    private HashSet<string> learnedSpells = new();
+
     private void OnFeatureSelected(int slot, ChangeEventArgs e)
     {
         var name = e.Value?.ToString();
@@ -713,7 +803,11 @@
             var r = races.FirstOrDefault(x => x.Name == selectedRace);
             if (r != null) baseWounds = r.Wounds;
         }
-        return baseWounds + totalFeatureWounds;
+        var con = currentStats.ContainsKey("CON") ? currentStats["CON"] : (baseStats.ContainsKey("CON") ? baseStats["CON"] : 0);
+        featureBonuses.TryGetValue("CON", out var fb);
+        var effectiveCon = con + fb;
+
+        return baseWounds + totalFeatureWounds + (effectiveCon / 10);
     }
 
     private int GetTotalMP()
@@ -951,7 +1045,7 @@
     }
 
     private class LocationDto { public string? Name { get; set; } public List<string>? Races { get; set; } }
-    private class SimpleDto { public string? Name { get; set; } public string? Description { get; set; } public string? AdditionalNotes { get; set; } }
+    private class SimpleDto { public string? Name { get; set; } public string? Description { get; set; } public string? AdditionalNotes { get; set; } public List<string>? Skills { get; set; } public string? Talent { get; set; } public List<string>? Traits { get; set; } public List<string>? Equipment { get; set; } }
     private class WeaponDto { public string? Name { get; set; } public string? Hands { get; set; } public string? Range { get; set; } public string? Damage { get; set; } public int Penetration { get; set; } public string? DamageTypes { get; set; } public string? Traits { get; set; } }
     private class ArmorDto { public string? Name { get; set; } public int? ArmorPoints { get; set; } }
     private class RaceDto { public string? Name { get; set; } public int Wounds { get; set; } public int MSK { get; set; } public int RSK { get; set; } public int STR { get; set; } public int AGI { get; set; } public int CON { get; set; } public int INT { get; set; } public int PER { get; set; } public int WPR { get; set; } public int CHA { get; set; } }

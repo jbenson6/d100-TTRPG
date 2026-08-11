@@ -14,9 +14,14 @@ namespace d100_TTRPG.Controllers
             var items = fields
                 .Select(f => f.GetValue(null))
                 .Where(v => v != null)
-                .Select(v => new {
-                    Name = v.GetType().GetProperty("Motivation")?.GetValue(v)?.ToString() ?? v.ToString(),
-                    Description = v.GetType().GetProperty("Description")?.GetValue(v)?.ToString()
+                .OfType<MotivationDefinition>()
+                .Select(md => new
+                {
+                    Name = md.Motivation.ToString(),
+                    Description = md.Description,
+                    Talent = md.Talent?.Definition?.Name ?? md.Talent?.Definition?.Talent.ToString(),
+                    Skills = md.Skills?.Select(s => s.Definition.Skill.ToString()).ToList() ?? new List<string>(),
+                    AdditionalNotes = md.AdditionalNotes
                 })
                 .OrderBy(x => x.Name)
                 .ToList();

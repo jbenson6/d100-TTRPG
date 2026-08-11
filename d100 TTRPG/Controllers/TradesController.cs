@@ -14,9 +14,16 @@ namespace d100_TTRPG.Controllers
             var items = fields
                 .Select(f => f.GetValue(null))
                 .Where(v => v != null)
-                .Select(v => new {
-                    Name = v.GetType().GetProperty("Trade")?.GetValue(v)?.ToString() ?? v.GetType().GetProperty("Name")?.GetValue(v)?.ToString() ?? v.ToString(),
-                    Description = v.GetType().GetProperty("Description")?.GetValue(v)?.ToString()
+                .OfType<TradeDefinition>()
+                .Select(td => new
+                {
+                    Name = td.Trade.ToString(),
+                    Description = td.Description,
+                    Talent = td.Talent?.Definition?.Name ?? td.Talent?.Definition?.Talent.ToString(),
+                    Skills = td.Skills?.Select(s => s.ToString()).ToList() ?? new List<string>(),
+                    Knowledge = td.Knowledge?.Select(k => k.ToString()).ToList() ?? new List<string>(),
+                    Crafts = td.Crafts?.Select(c => c.ToString()).ToList() ?? new List<string>(),
+                    Specializations = td.Specializations ?? new List<string>()
                 })
                 .OrderBy(x => x.Name)
                 .ToList();
