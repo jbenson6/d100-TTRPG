@@ -6,7 +6,6 @@ namespace d100_TTRPG.Data_Objects.Talent
     {
         Characteristic = 1,
         Skill = 2,
-        Knowledge = 3,
         Talent = 4,
         WeaponProficiency = 5,
         WeaponFocus = 6,

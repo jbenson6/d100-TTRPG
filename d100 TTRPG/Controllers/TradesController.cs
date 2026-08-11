@@ -19,7 +19,7 @@ namespace d100_TTRPG.Controllers
                 {
                     Name = td.Trade.ToString(),
                     Description = td.Description,
-                    Talent = td.Talent?.Definition?.Name ?? td.Talent?.Definition?.Talent.ToString(),
+                    Talent = td.Talent?.ToString(),
                     Skills = td.Skills?.Select(s => s.ToString()).ToList() ?? new List<string>()
                 })
                 .OrderBy(x => x.Name)

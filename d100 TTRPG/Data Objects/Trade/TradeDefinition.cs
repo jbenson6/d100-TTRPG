@@ -6,7 +6,7 @@
 
         public string? Description { get; set; }
 
-        public Talent.Talent? Talent { get; set; }
+        public Enums.Talents? Talent { get; set; }
 
         // Normal skills granted by the Trade.
         public List<Enums.Skills>? Skills { get; set; }
@@ -16,7 +16,7 @@
         public TradeDefinition(
             Enums.Trades trade,
             string description,
-            Talent.Talent? talent = null,
+            Enums.Talents? talent = null,
             List<Enums.Skills>? skills = null,
             string? additionalNotes = null)
         {

@@ -113,10 +113,7 @@
             new TradeDefinition(
                 Enums.Trades.Warrior,
                 "You have dedicated yourself to a martial lifestyle, maintaining a personal training regimen and are prepared for violence.",
-                skills: new List<Enums.Skills>
-                {
-                    Enums.Skills.QuickDraw
-                }
+                talent: Enums.Talents.QuickDraw
             );
     }
 }

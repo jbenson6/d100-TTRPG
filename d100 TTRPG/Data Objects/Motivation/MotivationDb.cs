@@ -29,7 +29,7 @@ namespace d100_TTRPG.Data_Objects.Motivation
             new MotivationDefinition(
                 Enums.Motivations.Discovery,
                 "Finding new things is your primary purpose in life. You seek out new locations, information, or techniques.",
-                talent: new Talent.Talent(TalentDb.Polyglot),
+                talent: Enums.Talents.Polyglot,
                 skills: new List<Enums.Skills>
                 {
                     Enums.Skills.Awareness,
@@ -62,7 +62,7 @@ namespace d100_TTRPG.Data_Objects.Motivation
             new MotivationDefinition(
                 Enums.Motivations.Justice,
                 "Every wrong must be righted, regardless of your ability. You impulsively seek to uphold the delicate balance of your ideal.",
-                talent: new Talent.Talent(TalentDb.Vigilance),
+                talent: Enums.Talents.Vigilance,
                 skills: new List<Enums.Skills>
                 {
                     Enums.Skills.Insight,
@@ -78,7 +78,7 @@ namespace d100_TTRPG.Data_Objects.Motivation
             new MotivationDefinition(
                 Enums.Motivations.Peace,
                 "You believe harmony is the ultimate goal and savor moments of tranquility. You prefer to end conflicts in a manner that prevents future ones as well.",
-                talent: new Talent.Talent(TalentDb.Meditation),
+                talent: Enums.Talents.Meditation,
                 skills: new List<Enums.Skills>
                 {
                     Enums.Skills.HandleAnimal,
@@ -109,7 +109,7 @@ namespace d100_TTRPG.Data_Objects.Motivation
             new MotivationDefinition(
                 Enums.Motivations.Power,
                 "There is no greater joy than inflicting your will upon as many people as possible. Climbing the ranks of organizations, building greater physical might, and always being on top can be seen as your personal habits.",
-                talent: new Talent.Talent(TalentDb.Leadership)
+                talent: Enums.Talents.Leadership
             );
 
 
@@ -121,7 +121,7 @@ namespace d100_TTRPG.Data_Objects.Motivation
             new MotivationDefinition(
                 Enums.Motivations.Vengeance,
                 "You wish to punish the wrongdoings against you, your loved ones, your country or your people. This has become your life's purpose, and your actions revolve around accomplishing this.",
-                talent: new Talent.Talent(TalentDb.Haste),
+                talent: Enums.Talents.Haste,
                 skills: new List<Enums.Skills>
                 {
                     Enums.Skills.History
@@ -139,7 +139,7 @@ namespace d100_TTRPG.Data_Objects.Motivation
             new MotivationDefinition(
                 Enums.Motivations.Violence,
                 "Whether participating in the clash of great armies or one on one encounters between you and another combatant, you can never exert yourself enough to satisfy your desire to crush, slash, bludgeon, choke, and explode others. Combat and destruction are virtue and art to you, whether you can justify it to others or not.",
-                talent: new Talent.Talent(TalentDb.AllOutAttack)
+                talent: Enums.Talents.AllOutAttack
             );
 
 

@@ -29,8 +29,7 @@ namespace d100_TTRPG.Controllers
                         .Select(s => s.ToString())
                         .ToList(),
 
-                    Talent = md.Talent?.Definition?.Name
-                        ?? md.Talent?.Definition?.Talent.ToString(),
+                    Talent = md.Talent?.ToString(),
 
                     AdditionalNotes = md.AdditionalNotes
                 })
