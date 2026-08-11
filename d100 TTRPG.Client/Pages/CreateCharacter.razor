@@ -118,15 +118,17 @@
                             .Where(s => s.MP <= GetTotalMP())
                             .OrderBy(s => s.Name))
                         {
-                            <div>
+                            var isLearned = learnedSpells.Contains(s.Name);
 
+                            <div>
                                 <input type="checkbox"
-                                       @onchange="e => OnSpellToggled(s.Name, s.XpCost, e)"/>
+                                       checked="@isLearned"
+                                       disabled="@(!isLearned && xpPool < s.XpCost)"
+                                       @onchange="e => OnSpellToggled(s.Name, s.XpCost, e)" />
 
                                 <label class="ms-1">
                                     @s.Name (@s.XpCost xp)
                                 </label>
-
                             </div>
                         }
 
@@ -1069,6 +1071,7 @@
     private bool lookupsLoaded = false;
 
     private HashSet<string> learnedSpells = new();
+    private HashSet<string> purchasedSpells = new();
 
     // =================================================
     // LOAD LOOKUPS
@@ -1591,28 +1594,91 @@
     // =================================================
 
     private void OnSpellToggled(
-        string spellName,
-        int xpCost,
-        ChangeEventArgs e)
+    string spellName,
+    int xpCost,
+    ChangeEventArgs e)
     {
-        var isChecked =
-            e.Value?.ToString() == "true" ||
-            e.Value?.ToString() == "on";
+        var isChecked = e.Value is bool value && value;
 
         if (isChecked)
         {
-            if (xpPool >= xpCost)
-            {
-                xpPool -= xpCost;
-                learnedSpells.Add(spellName);
-            }
+            // Don't charge XP twice.
+            if (purchasedSpells.Contains(spellName))
+                return;
+
+            if (xpPool < xpCost)
+                return;
+
+            xpPool -= xpCost;
+            purchasedSpells.Add(spellName);
+            learnedSpells.Add(spellName);
         }
         else
         {
-            if (learnedSpells.Contains(spellName))
+            // Only refund spells actually purchased with XP.
+            if (purchasedSpells.Remove(spellName))
             {
                 xpPool += xpCost;
-                learnedSpells.Remove(spellName);
+            }
+
+            // Remove it from the final learned list.
+            learnedSpells.Remove(spellName);
+
+            // Re-add it if it's granted automatically by race/feature.
+            RebuildLearnedSpells();
+        }
+    }
+
+    private void RebuildLearnedSpells()
+    {
+        learnedSpells.Clear();
+
+        // Purchased with XP
+        foreach (var spell in purchasedSpells)
+        {
+            learnedSpells.Add(spell);
+        }
+
+        // Race-granted spells
+        var race = races.FirstOrDefault(
+            r => r.Name == selectedRace);
+
+        if (race != null)
+        {
+            foreach (var spell in race.Spells)
+            {
+                if (!string.IsNullOrWhiteSpace(spell))
+                {
+                    learnedSpells.Add(spell);
+                }
+            }
+        }
+
+        // Feature-granted spells
+        var selectedFeatures = new[]
+        {
+            feature1,
+            feature2,
+            feature3,
+            feature4
+        };
+
+        foreach (var fname in selectedFeatures)
+        {
+            if (string.IsNullOrEmpty(fname))
+                continue;
+
+            switch (fname)
+            {
+                case "BardicPerformance":
+                case "Channel":
+                case "Counterspell":
+                case "EldritchBlast":
+                case "LayOnHands":
+                case "Purify":
+                case "Smite":
+                    learnedSpells.Add(fname);
+                    break;
             }
         }
     }
@@ -2033,7 +2099,6 @@
         featureBonuses.Clear();
         skillCounts.Clear();
         talents.Clear();
-        learnedSpells.Clear();
 
         totalFeatureMP = 0;
         totalFeatureWounds = 0;
@@ -2061,14 +2126,6 @@
                 if (!string.IsNullOrWhiteSpace(talent))
                 {
                     talents.Add(talent);
-                }
-            }
-
-            foreach (var spell in race.Spells)
-            {
-                if (!string.IsNullOrEmpty(spell))
-                {
-                    learnedSpells.Add(spell);
                 }
             }
         }
@@ -2131,19 +2188,6 @@
                 {
                     talents.Add(talent);
                 }
-            }
-
-            switch (fname)
-            {
-                case "BardicPerformance": 
-                case "Channel": 
-                case "Counterspell":
-                case "EldritchBlast": 
-                case "LayOnHands": 
-                case "Purify":
-                case "Smite":
-                    learnedSpells.Add(fname);
-                    break;
             }
 
             totalFeatureMP += f.MP;
@@ -2292,6 +2336,7 @@
         // -------------------------------------------------
 
         ValidateSelectedArmor();
+        RebuildLearnedSpells();
     }
 
     // =================================================
