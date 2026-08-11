@@ -114,23 +114,34 @@
 
         <div class="mt-3">
 
-            <h6>Spells available</h6>
+            <h6>Spells</h6>
+
+            <div class="mb-2">
+
+                <button class="btn btn-sm btn-outline-secondary me-2"
+                        @onclick="AddXP">
+                    +50 XP
+                </button>
+
+                <span class="me-3">
+                    XP Pool:
+                    <strong>@xpPool</strong>
+                </span>
+
+                <span class="me-3">
+                    XP Spent:
+                    <strong>@xpSpent</strong>
+                </span>
+
+                <span>
+                    XP Remaining:
+                    <strong>@xpRemaining</strong>
+                </span>
+
+            </div>
 
             @if (spells != null && spells.Any())
             {
-                <div class="mb-2">
-
-                    <button class="btn btn-sm btn-outline-secondary me-2"
-                            @onclick="AddXP">
-                        +50 XP
-                    </button>
-
-                    <span>
-                        XP pool: <strong>@xpPool</strong>
-                    </span>
-
-                </div>
-
                 <div class="row">
 
                     <div class="col-md-6">
@@ -141,17 +152,19 @@
                             .Where(s => s.MP <= GetTotalMP())
                             .OrderBy(s => s.Name))
                         {
-                            var isLearned = learnedSpells.Contains(s.Name);
+                            var isLearned = learnedSpells.Contains(s.Name ?? "");
 
-                            <div>
+                            <div class="mb-1">
+
                                 <input type="checkbox"
                                        checked="@isLearned"
-                                       disabled="@(!isLearned && xpPool < s.XpCost)"
+                                       disabled="@(!isLearned && xpRemaining < s.XpCost)"
                                        @onchange="e => OnSpellToggled(s.Name, s.XpCost, e)" />
 
                                 <label class="ms-1">
                                     @s.Name (@s.XpCost xp)
                                 </label>
+
                             </div>
                         }
 
@@ -164,9 +177,27 @@
                         @if (learnedSpells.Any())
                         {
                             <ul>
-                                @foreach (var ls in learnedSpells)
+                                @foreach (var ls in learnedSpells.OrderBy(x => x))
                                 {
-                                    <li>@ls</li>
+                                    var purchased = purchasedSpells.Contains(ls);
+
+                                    <li>
+                                        @ls
+
+                                        @if (purchased)
+                                        {
+                                            <span class="text-muted">
+                                                (purchased)
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-success">
+                                                (granted)
+                                            </span>
+                                        }
+
+                                    </li>
                                 }
                             </ul>
                         }
@@ -309,7 +340,6 @@
 
     </div>
 
-    @* Aristocrat background skill choices *@
     @if (selectedBackground == "Aristocrat")
     {
         <div class="card p-3 mb-3 border-primary">
@@ -376,7 +406,6 @@
         </div>
     }
 
-    @* Scholar trade skill choice *@
     @if (selectedTrade == "Scholar")
     {
         <div class="card p-3 mb-3 border-success">
@@ -415,7 +444,6 @@
         </div>
     }
 
-    @* Artisan trade skill choice *@
     @if (selectedTrade == "Artisan")
     {
         <div class="card p-3 mb-3 border-success">
@@ -454,7 +482,6 @@
         </div>
     }
 
-    @* Pleasure motivation skill choice *@
     @if (selectedMotivation == "Pleasure")
     {
         <div class="card p-3 mb-3 border-warning">
@@ -654,16 +681,16 @@
 
                             @foreach (var key in new[]
                             {
-                                "MSK",
-                                "RSK",
-                                "STR",
-                                "AGI",
-                                "CON",
-                                "INT",
-                                "PER",
-                                "WPR",
-                                "CHA"
-                            })
+                            "MSK",
+                            "RSK",
+                            "STR",
+                            "AGI",
+                            "CON",
+                            "INT",
+                            "PER",
+                            "WPR",
+                            "CHA"
+                        })
                             {
                                 var baseVal =
                                     baseStats.ContainsKey(key)
@@ -948,7 +975,7 @@
 
 @code {
 
-    private List<LocationDto> locations = new();
+private List<LocationDto> locations = new();
     private List<string> raceOptions = new();
     private List<SimpleDto> backgrounds = new();
     private List<SimpleDto> trades = new();
@@ -974,22 +1001,11 @@
     private string? feature3;
     private string? feature4;
 
-    // -------------------------------------------------
-    // SPECIAL SKILL SELECTIONS
-    // -------------------------------------------------
-
     private string? selectedAristocratSkill1;
     private string? selectedAristocratSkill2;
-
     private string? selectedScholarSkill;
-
     private string? selectedArtisanSkill;
-
     private string? selectedPleasureSkill;
-
-    // -------------------------------------------------
-    // ACADEMIC SKILLS
-    // -------------------------------------------------
 
     private readonly Dictionary<string, int> aristocratSkills = new()
     {
@@ -1010,10 +1026,6 @@
         ["Nature"] = 27,
         ["Religion"] = 28
     };
-
-    // -------------------------------------------------
-    // CRAFTING SKILLS
-    // -------------------------------------------------
 
     private readonly Dictionary<string, int> artisanSkills = new()
     {
@@ -1039,25 +1051,9 @@
         ["Wood"] = 38
     };
 
-    // -------------------------------------------------
-    // FEATURE / CHARACTER BONUSES
-    // -------------------------------------------------
-
     private Dictionary<string, int> featureBonuses = new();
     private Dictionary<string, int> skillCounts = new();
     private List<string> talents = new();
-
-    // -------------------------------------------------
-    // TRAITS
-    //
-    // Traits are rebuilt from:
-    // - Race
-    // - Main-hand weapon
-    // - Off-hand weapon
-    //
-    // Duplicate traits are automatically removed.
-    // -------------------------------------------------
-
     private List<string> traits = new();
 
     private int totalFeatureWounds = 0;
@@ -1065,17 +1061,9 @@
 
     private Dictionary<int, string> featureWarnings = new();
 
-    // -------------------------------------------------
-    // EQUIPMENT
-    // -------------------------------------------------
-
     private string? selectedArmor;
     private string? selectedMainWeapon;
     private string? selectedOffWeapon;
-
-    // -------------------------------------------------
-    // CHARACTERISTIC SCORES
-    // -------------------------------------------------
 
     private Dictionary<string, int> baseStats = new();
     private Dictionary<string, int> currentStats = new();
@@ -1099,16 +1087,21 @@
     private string? currentSaveFolder;
 
     // -------------------------------------------------
-    // SPELLS
+    // SPELLS / XP
     // -------------------------------------------------
 
     private List<SpellDto> spells = new();
-    private int xpPool = 1000;
 
-    private bool lookupsLoaded = false;
+    private int xpPool = 1000;
+    private int xpSpent = 0;
+
+    private int xpRemaining =>
+        Math.Max(0, xpPool - xpSpent);
 
     private HashSet<string> learnedSpells = new();
     private HashSet<string> purchasedSpells = new();
+
+    private bool lookupsLoaded = false;
 
     // =================================================
     // LOAD LOOKUPS
@@ -1340,8 +1333,6 @@
             }
         }
 
-        // Rebuild traits so main-hand and off-hand
-        // weapon traits are immediately reflected.
         ReapplyAllBonusesSkillsTalentsTraits();
     }
 
@@ -1354,7 +1345,6 @@
         selectedOffWeapon =
             e.Value?.ToString();
 
-        // Rebuild traits whenever the off-hand changes.
         ReapplyAllBonusesSkillsTalentsTraits();
     }
 
@@ -1493,7 +1483,10 @@
             $"Motivation={selectedMotivation}, " +
             $"Features=[{feature1},{feature2},{feature3},{feature4}], " +
             $"Talents=[{string.Join(", ", talents)}], " +
-            $"Traits=[{string.Join(", ", traits)}]";
+            $"Traits=[{string.Join(", ", traits)}], " +
+            $"XP Spent={xpSpent}, " +
+            $"XP Remaining={xpPool}, " +
+            $"Learned Spells=[{string.Join(", ", learnedSpells)}]";
     }
 
     // =================================================
@@ -1522,6 +1515,8 @@
             return;
         }
 
+        RebuildLearnedSpells();
+
         var dto = new ClientCharacterDto
         {
             Name = characterName,
@@ -1547,14 +1542,44 @@
             Features =
                 new List<string?>
                 {
-                    feature1,
-                    feature2,
-                    feature3,
-                    feature4
+                feature1,
+                feature2,
+                feature3,
+                feature4
                 }
                 .Where(s => !string.IsNullOrEmpty(s))
                 .Select(s => s!)
                 .ToList(),
+
+            Talents =
+                talents
+                    .Where(t => !string.IsNullOrWhiteSpace(t))
+                    .Distinct()
+                    .OrderBy(t => t)
+                    .ToList(),
+
+            Traits =
+                traits
+                    .Where(t => !string.IsNullOrWhiteSpace(t))
+                    .Distinct()
+                    .OrderBy(t => t)
+                    .ToList(),
+
+            Skills =
+                skillCounts
+                    .Where(x => x.Value > 0)
+                    .OrderBy(x => x.Key)
+                    .Select(x => x.Key)
+                    .ToList(),
+
+            BackgroundSkills =
+                GetLookupSkills(backgrounds, selectedBackground),
+
+            TradeSkills =
+                GetLookupSkills(trades, selectedTrade),
+
+            MotivationSkills =
+                GetLookupSkills(motivations, selectedMotivation),
 
             AristocratSkill1 =
                 selectedAristocratSkill1,
@@ -1581,10 +1606,31 @@
                 selectedOffWeapon,
 
             CurrentStats =
-                currentStats,
+                new Dictionary<string, int>(
+                    currentStats),
 
             AvailablePoints =
-                availablePoints
+                availablePoints,
+
+            // -------------------------------------------------
+            // SPELL / XP PERSISTENCE
+            // -------------------------------------------------
+
+            XpPool = xpPool,
+
+            XpSpent = xpSpent,
+
+            LearnedSpells =
+                learnedSpells
+                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                    .OrderBy(x => x)
+                    .ToList(),
+
+            PurchasedSpells =
+                purchasedSpells
+                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                    .OrderBy(x => x)
+                    .ToList()
         };
 
         try
@@ -1633,8 +1679,14 @@
             }
             else
             {
+                var errorBody =
+                    await res.Content.ReadAsStringAsync();
+
                 saveMessage =
-                    $"Save failed: {res.StatusCode}";
+                    $"Save failed: {res.StatusCode}" +
+                    (string.IsNullOrWhiteSpace(errorBody)
+                        ? ""
+                        : $" - {errorBody}");
             }
         }
         catch (Exception ex)
@@ -1645,37 +1697,66 @@
     }
 
     // =================================================
+    // LOOKUP SKILLS
+    // =================================================
+
+    private List<string> GetLookupSkills(
+        IEnumerable<SimpleDto> lookup,
+        string? selectedName)
+    {
+        if (string.IsNullOrWhiteSpace(selectedName))
+            return new List<string>();
+
+        return
+            lookup
+                .FirstOrDefault(x => x.Name == selectedName)?
+                .Skills?
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .ToList()
+            ?? new List<string>();
+    }
+
+    // =================================================
     // SPELL TOGGLE
     // =================================================
 
     private void OnSpellToggled(
-        string spellName,
-        int xpCost,
-        ChangeEventArgs e)
+    string? spellName,
+    int xpCost,
+    ChangeEventArgs e)
     {
         var isChecked =
             e.Value is bool value && value;
 
+        if (string.IsNullOrWhiteSpace(spellName))
+            return;
+
         if (isChecked)
         {
+            // Already purchased.
             if (purchasedSpells.Contains(spellName))
                 return;
 
-            if (xpPool < xpCost)
+            // Cannot purchase if insufficient XP remains.
+            if (xpRemaining < xpCost)
                 return;
 
-            xpPool -= xpCost;
             purchasedSpells.Add(spellName);
-            learnedSpells.Add(spellName);
+
+            xpSpent += xpCost;
+
+            RebuildLearnedSpells();
         }
         else
         {
+            // Only purchased spells can be refunded.
             if (purchasedSpells.Remove(spellName))
             {
-                xpPool += xpCost;
+                xpSpent =
+                    Math.Max(
+                        0,
+                        xpSpent - xpCost);
             }
-
-            learnedSpells.Remove(spellName);
 
             RebuildLearnedSpells();
         }
@@ -1689,13 +1770,14 @@
     {
         learnedSpells.Clear();
 
-        // Purchased with XP
         foreach (var spell in purchasedSpells)
         {
-            learnedSpells.Add(spell);
+            if (!string.IsNullOrWhiteSpace(spell))
+            {
+                learnedSpells.Add(spell);
+            }
         }
 
-        // Race-granted spells
         var race =
             races.FirstOrDefault(
                 r => r.Name == selectedRace);
@@ -1711,14 +1793,13 @@
             }
         }
 
-        // Feature-granted spells
         var selectedFeatures = new[]
         {
-            feature1,
-            feature2,
-            feature3,
-            feature4
-        };
+        feature1,
+        feature2,
+        feature3,
+        feature4
+    };
 
         foreach (var fname in selectedFeatures)
         {
@@ -2038,10 +2119,10 @@
         var selectedFeatures =
             new[]
             {
-                feature1,
-                feature2,
-                feature3,
-                feature4
+            feature1,
+            feature2,
+            feature3,
+            feature4
             };
 
         foreach (var featureName in selectedFeatures)
@@ -2224,7 +2305,6 @@
                 }
             }
 
-            // Race traits
             foreach (var trait in race.Traits)
             {
                 AddTrait(trait);
@@ -2238,10 +2318,10 @@
         var selectedFeatures =
             new[]
             {
-                feature1,
-                feature2,
-                feature3,
-                feature4
+            feature1,
+            feature2,
+            feature3,
+            feature4
             };
 
         foreach (var fname in selectedFeatures)
@@ -2275,10 +2355,6 @@
                 skillCounts[sk] =
                     sc + 1;
             }
-
-            // -------------------------------------------------
-            // FEATURE TALENTS
-            // -------------------------------------------------
 
             foreach (var talent in f.Talents)
             {
@@ -2316,14 +2392,12 @@
                 }
             }
 
-            // Background talent
             if (b != null &&
                 !string.IsNullOrWhiteSpace(b.Talent))
             {
                 talents.Add(b.Talent);
             }
 
-            // Aristocrat special skill choices
             if (selectedBackground == "Aristocrat")
             {
                 AddSkillCount(
@@ -2362,14 +2436,12 @@
                 }
             }
 
-            // Trade talent
             if (t != null &&
                 !string.IsNullOrWhiteSpace(t.Talent))
             {
                 talents.Add(t.Talent);
             }
 
-            // Scholar gets one academic skill at +2 count
             if (selectedTrade == "Scholar")
             {
                 AddSkillCount(
@@ -2378,7 +2450,6 @@
                     2);
             }
 
-            // Artisan gets one crafting skill at +1 count
             if (selectedTrade == "Artisan")
             {
                 AddSkillCount(
@@ -2412,14 +2483,12 @@
                 }
             }
 
-            // Motivation talent
             if (m != null &&
                 !string.IsNullOrWhiteSpace(m.Talent))
             {
                 talents.Add(m.Talent);
             }
 
-            // Pleasure gets one crafting skill at +1 count
             if (selectedMotivation == "Pleasure")
             {
                 AddSkillCount(
@@ -2652,6 +2721,10 @@
                             ["CHA"] = raceDef.CHA
                         };
                 }
+                else
+                {
+                    baseStats.Clear();
+                }
 
                 selectedBackground =
                     dto.Background;
@@ -2738,17 +2811,59 @@
                         new Dictionary<string, int>(
                             dto.CurrentStats);
                 }
-                else if (baseStats != null &&
-                         baseStats.Any())
+                else if (baseStats.Any())
                 {
                     currentStats =
                         baseStats.ToDictionary(
                             kv => kv.Key,
                             kv => kv.Value + 5);
                 }
+                else
+                {
+                    currentStats.Clear();
+                }
 
                 availablePoints =
                     dto.AvailablePoints;
+
+                // -------------------------------------------------
+                // RESTORE XP
+                // -------------------------------------------------
+
+                xpPool =
+                    Math.Max(
+                        0,
+                        dto.XpPool);
+
+                xpSpent =
+                    Math.Max(
+                        0,
+                        dto.XpSpent);
+
+
+                // -------------------------------------------------
+                // RESTORE PURCHASED SPELLS
+                // -------------------------------------------------
+
+                purchasedSpells =
+                    dto.PurchasedSpells != null
+                        ? new HashSet<string>(
+                            dto.PurchasedSpells
+                                .Where(s =>
+                                    !string.IsNullOrWhiteSpace(s)))
+                        : new HashSet<string>();
+
+                // -------------------------------------------------
+                // RESTORE LEARNED SPELLS
+                // -------------------------------------------------
+
+                learnedSpells =
+                    dto.LearnedSpells != null
+                        ? new HashSet<string>(
+                            dto.LearnedSpells
+                                .Where(s =>
+                                    !string.IsNullOrWhiteSpace(s)))
+                        : new HashSet<string>();
 
                 if (selectedPowerLevel != null)
                 {
@@ -2759,7 +2874,8 @@
                 saveMessage =
                     "Loaded.";
 
-                // This rebuilds race and weapon traits.
+                // Rebuild derived data from the selections while
+                // preserving the purchased spell set.
                 ReapplyAllBonusesSkillsTalentsTraits();
             }
         }
@@ -2932,7 +3048,11 @@
 
         public string? Motivation { get; set; }
 
-        public List<string>? Features { get; set; }
+        // -------------------------------------------------
+        // Character selections
+        // -------------------------------------------------
+
+        public List<string> Features { get; set; } = new();
 
         public string? AristocratSkill1 { get; set; }
 
@@ -2944,13 +3064,55 @@
 
         public string? PleasureSkill { get; set; }
 
+        // -------------------------------------------------
+        // Derived character data
+        // -------------------------------------------------
+
+        public List<string> Talents { get; set; } = new();
+
+        public List<string> Traits { get; set; } = new();
+
+        public List<string> Skills { get; set; } = new();
+
+        public List<string> BackgroundSkills { get; set; } = new();
+
+        public List<string> TradeSkills { get; set; } = new();
+
+        public List<string> MotivationSkills { get; set; } = new();
+
+        // -------------------------------------------------
+        // Spells
+        // -------------------------------------------------
+
+        public List<string> LearnedSpells { get; set; } = new();
+
+        public List<string> PurchasedSpells { get; set; } = new();
+
+        // -------------------------------------------------
+        // XP
+        // -------------------------------------------------
+
+        public int XpPool { get; set; }
+
+        public int XpSpent { get; set; }
+
+        public int XpRemaining { get; set; }
+
+        // -------------------------------------------------
+        // Equipment
+        // -------------------------------------------------
+
         public string? Armor { get; set; }
 
         public string? MainWeapon { get; set; }
 
         public string? OffWeapon { get; set; }
 
-        public Dictionary<string, int>? CurrentStats { get; set; }
+        // -------------------------------------------------
+        // Characteristics
+        // -------------------------------------------------
+
+        public Dictionary<string, int> CurrentStats { get; set; } = new();
 
         public int AvailablePoints { get; set; }
     }
@@ -3115,4 +3277,5 @@
         public List<string> Talents { get; set; } =
             new List<string>();
     }
+
 }
