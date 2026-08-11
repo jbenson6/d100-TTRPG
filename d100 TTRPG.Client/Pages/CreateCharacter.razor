@@ -11,9 +11,11 @@
 <div class="card p-3">
 
     <div class="mb-3">
+
         <label class="form-label">Power Level</label>
 
         <select class="form-select" @onchange="OnPowerLevelChanged">
+
             <option value="">(Select a power level)</option>
 
             @foreach (var p in powerLevels)
@@ -23,10 +25,13 @@
                     @p.Name (@p.Points pts, @p.Features features)
                 </option>
             }
+
         </select>
+
     </div>
 
     <div class="card p-3 mt-3">
+
         <h5>Derived</h5>
 
         <div class="row">
@@ -85,6 +90,24 @@
                     </div>
                 }
 
+                <h6 class="mt-3">Traits</h6>
+
+                @if (traits.Any())
+                {
+                    <ul>
+                        @foreach (var trait in traits.OrderBy(x => x))
+                        {
+                            <li>@trait</li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <div class="text-muted">
+                        No traits.
+                    </div>
+                }
+
             </div>
 
         </div>
@@ -136,7 +159,7 @@
 
                     <div class="col-md-6">
 
-                        <h6>Learned</h6>
+                        <h6>Learned Spells</h6>
 
                         @if (learnedSpells.Any())
                         {
@@ -785,7 +808,8 @@
                     </label>
 
                     <select class="form-select"
-                            @bind="selectedOffWeapon"
+                            value="@selectedOffWeapon"
+                            @onchange="OnOffWeaponChanged"
                             disabled="@IsOffhandDisabled()">
 
                         <option value="">
@@ -1016,12 +1040,25 @@
     };
 
     // -------------------------------------------------
-    // FEATURE RELATED
+    // FEATURE / CHARACTER BONUSES
     // -------------------------------------------------
 
     private Dictionary<string, int> featureBonuses = new();
     private Dictionary<string, int> skillCounts = new();
     private List<string> talents = new();
+
+    // -------------------------------------------------
+    // TRAITS
+    //
+    // Traits are rebuilt from:
+    // - Race
+    // - Main-hand weapon
+    // - Off-hand weapon
+    //
+    // Duplicate traits are automatically removed.
+    // -------------------------------------------------
+
+    private List<string> traits = new();
 
     private int totalFeatureWounds = 0;
     private int totalFeatureMP = 0;
@@ -1302,6 +1339,23 @@
                 selectedOffWeapon = null;
             }
         }
+
+        // Rebuild traits so main-hand and off-hand
+        // weapon traits are immediately reflected.
+        ReapplyAllBonusesSkillsTalentsTraits();
+    }
+
+    // =================================================
+    // OFF-HAND WEAPON
+    // =================================================
+
+    private void OnOffWeaponChanged(ChangeEventArgs e)
+    {
+        selectedOffWeapon =
+            e.Value?.ToString();
+
+        // Rebuild traits whenever the off-hand changes.
+        ReapplyAllBonusesSkillsTalentsTraits();
     }
 
     // =================================================
@@ -1334,7 +1388,7 @@
     }
 
     // =================================================
-    // OFFHAND
+    // OFFHAND DISABLED
     // =================================================
 
     private bool IsOffhandDisabled()
@@ -1438,7 +1492,8 @@
             $"Trade={selectedTrade}, " +
             $"Motivation={selectedMotivation}, " +
             $"Features=[{feature1},{feature2},{feature3},{feature4}], " +
-            $"Talents=[{string.Join(", ", talents)}]";
+            $"Talents=[{string.Join(", ", talents)}], " +
+            $"Traits=[{string.Join(", ", traits)}]";
     }
 
     // =================================================
@@ -1594,15 +1649,15 @@
     // =================================================
 
     private void OnSpellToggled(
-    string spellName,
-    int xpCost,
-    ChangeEventArgs e)
+        string spellName,
+        int xpCost,
+        ChangeEventArgs e)
     {
-        var isChecked = e.Value is bool value && value;
+        var isChecked =
+            e.Value is bool value && value;
 
         if (isChecked)
         {
-            // Don't charge XP twice.
             if (purchasedSpells.Contains(spellName))
                 return;
 
@@ -1615,19 +1670,20 @@
         }
         else
         {
-            // Only refund spells actually purchased with XP.
             if (purchasedSpells.Remove(spellName))
             {
                 xpPool += xpCost;
             }
 
-            // Remove it from the final learned list.
             learnedSpells.Remove(spellName);
 
-            // Re-add it if it's granted automatically by race/feature.
             RebuildLearnedSpells();
         }
     }
+
+    // =================================================
+    // REBUILD LEARNED SPELLS
+    // =================================================
 
     private void RebuildLearnedSpells()
     {
@@ -1640,8 +1696,9 @@
         }
 
         // Race-granted spells
-        var race = races.FirstOrDefault(
-            r => r.Name == selectedRace);
+        var race =
+            races.FirstOrDefault(
+                r => r.Name == selectedRace);
 
         if (race != null)
         {
@@ -2091,7 +2148,44 @@
     }
 
     // =================================================
-    // REAPPLY ALL BONUSES
+    // ADD TRAITS
+    // =================================================
+
+    private void AddTrait(string? trait)
+    {
+        if (string.IsNullOrWhiteSpace(trait))
+            return;
+
+        if (!traits.Contains(trait))
+        {
+            traits.Add(trait);
+        }
+    }
+
+    // =================================================
+    // ADD WEAPON TRAITS
+    // =================================================
+
+    private void AddWeaponTraits(string? weaponName)
+    {
+        if (string.IsNullOrWhiteSpace(weaponName))
+            return;
+
+        var weapon =
+            weapons.FirstOrDefault(
+                w => w.Name == weaponName);
+
+        if (weapon == null)
+            return;
+
+        foreach (var trait in weapon.Traits)
+        {
+            AddTrait(trait);
+        }
+    }
+
+    // =================================================
+    // REAPPLY ALL BONUSES / SKILLS / TALENTS / TRAITS
     // =================================================
 
     private void ReapplyAllBonusesSkillsTalentsTraits()
@@ -2099,6 +2193,7 @@
         featureBonuses.Clear();
         skillCounts.Clear();
         talents.Clear();
+        traits.Clear();
 
         totalFeatureMP = 0;
         totalFeatureWounds = 0;
@@ -2127,6 +2222,12 @@
                 {
                     talents.Add(talent);
                 }
+            }
+
+            // Race traits
+            foreach (var trait in race.Traits)
+            {
+                AddTrait(trait);
             }
         }
 
@@ -2177,9 +2278,6 @@
 
             // -------------------------------------------------
             // FEATURE TALENTS
-            //
-            // FeatureDto now contains List<string> Talents,
-            // matching the API response from FeaturesController.
             // -------------------------------------------------
 
             foreach (var talent in f.Talents)
@@ -2218,14 +2316,14 @@
                 }
             }
 
-            // Background talent.
+            // Background talent
             if (b != null &&
                 !string.IsNullOrWhiteSpace(b.Talent))
             {
                 talents.Add(b.Talent);
             }
 
-            // Aristocrat special skill choices.
+            // Aristocrat special skill choices
             if (selectedBackground == "Aristocrat")
             {
                 AddSkillCount(
@@ -2264,14 +2362,14 @@
                 }
             }
 
-            // Trade talent.
+            // Trade talent
             if (t != null &&
                 !string.IsNullOrWhiteSpace(t.Talent))
             {
                 talents.Add(t.Talent);
             }
 
-            // Scholar gets one academic skill at +2 count.
+            // Scholar gets one academic skill at +2 count
             if (selectedTrade == "Scholar")
             {
                 AddSkillCount(
@@ -2280,7 +2378,7 @@
                     2);
             }
 
-            // Artisan gets one crafting skill at +1 count.
+            // Artisan gets one crafting skill at +1 count
             if (selectedTrade == "Artisan")
             {
                 AddSkillCount(
@@ -2314,14 +2412,14 @@
                 }
             }
 
-            // Motivation talent.
+            // Motivation talent
             if (m != null &&
                 !string.IsNullOrWhiteSpace(m.Talent))
             {
                 talents.Add(m.Talent);
             }
 
-            // Pleasure gets one crafting skill at +1 count.
+            // Pleasure gets one crafting skill at +1 count
             if (selectedMotivation == "Pleasure")
             {
                 AddSkillCount(
@@ -2336,6 +2434,18 @@
         // -------------------------------------------------
 
         ValidateSelectedArmor();
+
+        // -------------------------------------------------
+        // WEAPON TRAITS
+        // -------------------------------------------------
+
+        AddWeaponTraits(selectedMainWeapon);
+        AddWeaponTraits(selectedOffWeapon);
+
+        // -------------------------------------------------
+        // SPELLS
+        // -------------------------------------------------
+
         RebuildLearnedSpells();
     }
 
@@ -2649,6 +2759,7 @@
                 saveMessage =
                     "Loaded.";
 
+                // This rebuilds race and weapon traits.
                 ReapplyAllBonusesSkillsTalentsTraits();
             }
         }
@@ -2882,7 +2993,7 @@
 
         public string? DamageTypes { get; set; }
 
-        public string? Traits { get; set; }
+        public List<string> Traits { get; set; } = new();
     }
 
     private class ArmorDto
@@ -2899,13 +3010,21 @@
         public int Wounds { get; set; }
 
         public int MSK { get; set; }
+
         public int RSK { get; set; }
+
         public int STR { get; set; }
+
         public int AGI { get; set; }
+
         public int CON { get; set; }
+
         public int INT { get; set; }
+
         public int PER { get; set; }
+
         public int WPR { get; set; }
+
         public int CHA { get; set; }
 
         public List<string> Skills { get; set; } =
