@@ -21,6 +21,7 @@
         </select>
     </div>
 
+    ```
     <div class="card p-3 mt-3">
         <h5>Derived</h5>
         <div class="row">
@@ -32,11 +33,10 @@
 
             <div class="col-md-6">
                 <h6>Skills</h6>
-
                 @if (skillCounts.Any())
                 {
                     <ul>
-                        @foreach (var kv in skillCounts)
+                        @foreach (var kv in skillCounts.OrderBy(x => x.Key))
                         {
                             <li>@kv.Key - @GetSkillRank(kv.Value)</li>
                         }
@@ -153,39 +153,6 @@
                     </option>
                 }
             </select>
-
-            @if (IsAristocratBackground)
-            {
-                <div class="mt-3">
-                    <label class="form-label">Additional Skill 1</label>
-
-                    <select class="form-select" @onchange="OnBackgroundExtraSkill1Changed">
-                        <option value="">(Select skill)</option>
-
-                        @foreach (var skill in GetAvailableAristocratSkills(1))
-                        {
-                            <option value="@skill.Name" selected="@(selectedBackgroundExtraSkill1 == skill.Name)">
-                                @skill.Name
-                            </option>
-                        }
-                    </select>
-                </div>
-
-                <div class="mt-3">
-                    <label class="form-label">Additional Skill 2</label>
-
-                    <select class="form-select" @onchange="OnBackgroundExtraSkill2Changed">
-                        <option value="">(Select skill)</option>
-
-                        @foreach (var skill in GetAvailableAristocratSkills(2))
-                        {
-                            <option value="@skill.Name" selected="@(selectedBackgroundExtraSkill2 == skill.Name)">
-                                @skill.Name
-                            </option>
-                        }
-                    </select>
-                </div>
-            }
         </div>
 
         <div class="col-md-4 mb-3">
@@ -218,6 +185,104 @@
             </select>
         </div>
     </div>
+
+    @* Aristocrat background skill choices *@
+    @if (IsAristocratBackground())
+    {
+        <div class="card p-3 mb-3 border-primary">
+            <h6 class="text-primary">Aristocrat — Choose 2 Skills</h6>
+
+            <div class="row">
+                <div class="col-md-6 mb-2">
+                    <label class="form-label">Aristocrat Skill 1</label>
+
+                    <select class="form-select" @onchange="OnAristocratSkill1Changed">
+                        <option value="">(Select skill)</option>
+
+                        @foreach (var skill in aristocratSkills)
+                        {
+                            <option value="@skill" selected="@(aristocratSkill1 == skill)">
+                                @skill
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <label class="form-label">Aristocrat Skill 2</label>
+
+                    <select class="form-select" @onchange="OnAristocratSkill2Changed">
+                        <option value="">(Select skill)</option>
+
+                        @foreach (var skill in aristocratSkills)
+                        {
+                            <option value="@skill" selected="@(aristocratSkill2 == skill)">
+                                @skill
+                            </option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-text">
+                Each selected skill adds 1 count.
+            </div>
+        </div>
+    }
+
+    @* Scholar trade skill choice *@
+    @if (IsScholarTrade())
+    {
+        <div class="card p-3 mb-3 border-success">
+            <h6 class="text-success">Scholar — Choose 1 Skill</h6>
+
+            <div class="mb-2">
+                <label class="form-label">Scholar Skill</label>
+
+                <select class="form-select" @onchange="OnScholarSkillChanged">
+                    <option value="">(Select skill)</option>
+
+                    @foreach (var skill in scholarSkills)
+                    {
+                        <option value="@skill" selected="@(scholarSkill == skill)">
+                            @skill
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-text">
+                The selected skill adds 2 counts.
+            </div>
+        </div>
+    }
+
+    @* Artisan trade skill choice *@
+    @if (IsArtisanTrade())
+    {
+        <div class="card p-3 mb-3 border-warning">
+            <h6 class="text-warning">Artisan — Choose 1 Skill</h6>
+
+            <div class="mb-2">
+                <label class="form-label">Artisan Skill</label>
+
+                <select class="form-select" @onchange="OnArtisanSkillChanged">
+                    <option value="">(Select skill)</option>
+
+                    @foreach (var skill in artisanSkills)
+                    {
+                        <option value="@skill" selected="@(artisanSkill == skill)">
+                            @skill
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-text">
+                The selected skill adds 1 count.
+            </div>
+        </div>
+    }
 
     <div class="row">
         <div class="col-md-4 mb-3">
@@ -536,16 +601,19 @@
 @code {
     private List<LocationDto> locations = new();
     private List<string> raceOptions = new();
+
     private List<SimpleDto> backgrounds = new();
     private List<SimpleDto> trades = new();
     private List<SimpleDto> motivations = new();
+
     private List<FeatureDto> features = new();
     private List<WeaponDto> weapons = new();
     private List<ArmorDto> armors = new();
     private List<RaceDto> races = new();
     private List<PowerLevelDto> powerLevels = new();
 
-private PowerLevelDto? selectedPowerLevel;
+    private PowerLevelDto? selectedPowerLevel;
+
     private int allowedFeatures = 3;
 
     private string? selectedLocation;
@@ -559,23 +627,53 @@ private PowerLevelDto? selectedPowerLevel;
     private string? feature3;
     private string? feature4;
 
-    // Aristocrat additional skills
-    private string? selectedBackgroundExtraSkill1;
-    private string? selectedBackgroundExtraSkill2;
+    // ============================================================
+    // Background / Trade skill choices
+    // ============================================================
 
-    // Aristocrat skills from the skills database.
-    // The numeric IDs correspond to the supplied skillsdb values.
-    private readonly List<SkillOption> aristocratSkillOptions = new()
+    private readonly List<string> aristocratSkills = new()
 {
-    new SkillOption("Arcana", 23),
-    new SkillOption("Engineering", 24),
-    new SkillOption("History", 25),
-    new SkillOption("Local", 26),
-    new SkillOption("Nature", 27),
-    new SkillOption("Religion", 28)
+    "Arcana",
+    "Engineering",
+    "History",
+    "Local",
+    "Nature",
+    "Religion"
 };
 
+    private readonly List<string> scholarSkills = new()
+{
+    "Arcana",
+    "Engineering",
+    "History",
+    "Local",
+    "Nature",
+    "Religion"
+};
+
+    private readonly List<string> artisanSkills = new()
+{
+    "Alchemy",
+    "ArmsAndArmor",
+    "BonesAndHides",
+    "BowsAndArrows",
+    "Glass",
+    "Metal",
+    "Traps",
+    "Wood"
+};
+
+    private string? aristocratSkill1;
+    private string? aristocratSkill2;
+
+    private string? scholarSkill;
+
+    private string? artisanSkill;
+
+    // ============================================================
     // Feature related
+    // ============================================================
+
     private Dictionary<string, int> featureBonuses = new();
     private Dictionary<string, int> skillCounts = new();
 
@@ -588,38 +686,51 @@ private PowerLevelDto? selectedPowerLevel;
     private string? selectedMainWeapon;
     private string? selectedOffWeapon;
 
+    // ============================================================
     // Characteristic scores
+    // ============================================================
+
     private Dictionary<string, int> baseStats = new();
     private Dictionary<string, int> currentStats = new();
+
     private int availablePoints = 120;
+
+    // ============================================================
+    // Save / load / misc
+    // ============================================================
 
     private string? message;
     private string? characterName;
 
     private List<string> savedFiles = new();
+
     private string? selectedSavedFile;
     private string? saveMessage;
 
     private DiagnosticsInfo? diagnostics;
+
     private string? customBasePath;
     private string? currentSaveFolder;
 
     private List<SpellDto> spells = new();
+
     private int xpPool = 1000;
 
     private bool lookupsLoaded = false;
 
     private HashSet<string> learnedSpells = new();
 
-    private bool IsAristocratBackground =>
-        string.Equals(selectedBackground, "Aristocrat", StringComparison.OrdinalIgnoreCase);
+    // ============================================================
+    // Lifecycle
+    // ============================================================
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender || lookupsLoaded)
             return;
 
-        // Only perform HTTP fetches when running in the browser to avoid server prerender HTTP calls
+        // Only perform HTTP fetches when running in the browser
+        // to avoid server prerender HTTP calls.
         if (!OperatingSystem.IsBrowser())
         {
             lookupsLoaded = true;
@@ -628,7 +739,6 @@ private PowerLevelDto? selectedPowerLevel;
 
         try
         {
-            // Load lookups
             locations = await Http.GetFromJsonAsync<List<LocationDto>>("api/locations")
                 ?? new List<LocationDto>();
 
@@ -650,7 +760,6 @@ private PowerLevelDto? selectedPowerLevel;
             armors = await Http.GetFromJsonAsync<List<ArmorDto>>("api/armor")
                 ?? new List<ArmorDto>();
 
-            // Load spells for character spell list
             try
             {
                 spells = await Http.GetFromJsonAsync<List<SpellDto>>("api/spells")
@@ -667,7 +776,6 @@ private PowerLevelDto? selectedPowerLevel;
             powerLevels = await Http.GetFromJsonAsync<List<PowerLevelDto>>("api/powerlevels")
                 ?? new List<PowerLevelDto>();
 
-            // Default power level to Standard if present
             selectedPowerLevel =
                 powerLevels.FirstOrDefault(p => p.Name == "Standard")
                 ?? powerLevels.FirstOrDefault();
@@ -676,7 +784,6 @@ private PowerLevelDto? selectedPowerLevel;
             {
                 allowedFeatures = selectedPowerLevel.Features;
 
-                // Reserve mandatory +5 per stat
                 var mandatory = 9 * 5;
 
                 availablePoints = Math.Max(
@@ -686,19 +793,18 @@ private PowerLevelDto? selectedPowerLevel;
         }
         catch (System.Net.Http.HttpRequestException)
         {
-            // API not available
             locations = new List<LocationDto>();
             backgrounds = new List<SimpleDto>();
             trades = new List<SimpleDto>();
             motivations = new List<SimpleDto>();
             features = new List<FeatureDto>();
 
-            saveMessage = "Unable to load lookups - server API not available.";
+            saveMessage =
+                "Unable to load lookups - server API not available.";
         }
 
         lookupsLoaded = true;
 
-        // Load saved files and diagnostics
         await LoadSavedFiles();
         await LoadDiagnostics();
 
@@ -708,13 +814,47 @@ private PowerLevelDto? selectedPowerLevel;
         StateHasChanged();
     }
 
+    // ============================================================
+    // Background / Trade helper checks
+    // ============================================================
+
+    private bool IsAristocratBackground()
+    {
+        return string.Equals(
+            selectedBackground,
+            "Aristocrat",
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool IsScholarTrade()
+    {
+        return string.Equals(
+            selectedTrade,
+            "Scholar",
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool IsArtisanTrade()
+    {
+        return string.Equals(
+            selectedTrade,
+            "Artisan",
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    // ============================================================
+    // Location / Race
+    // ============================================================
+
     private Task OnLocationChanged(ChangeEventArgs e)
     {
         selectedLocation = e.Value?.ToString();
 
-        var loc = locations.FirstOrDefault(l => l.Name == selectedLocation);
+        var loc = locations.FirstOrDefault(
+            l => l.Name == selectedLocation);
 
         raceOptions = loc?.Races ?? new List<string>();
+
         selectedRace = null;
 
         return Task.CompletedTask;
@@ -724,7 +864,8 @@ private PowerLevelDto? selectedPowerLevel;
     {
         selectedRace = e.Value?.ToString();
 
-        var r = races.FirstOrDefault(x => x.Name == selectedRace);
+        var r = races.FirstOrDefault(
+            x => x.Name == selectedRace);
 
         if (r != null)
         {
@@ -741,7 +882,7 @@ private PowerLevelDto? selectedPowerLevel;
                 ["CHA"] = r.CHA
             };
 
-            // Initialize current stats to base + mandatory +5 per stat
+            // Initialize current stats to base + mandatory +5 per stat.
             currentStats = baseStats.ToDictionary(
                 kv => kv.Key,
                 kv => kv.Value + 5);
@@ -758,7 +899,9 @@ private PowerLevelDto? selectedPowerLevel;
             }
             else
             {
-                availablePoints = Math.Max(0, 120 - mandatory);
+                availablePoints = Math.Max(
+                    0,
+                    120 - mandatory);
             }
         }
         else
@@ -768,11 +911,16 @@ private PowerLevelDto? selectedPowerLevel;
         }
     }
 
+    // ============================================================
+    // Weapons
+    // ============================================================
+
     private void OnMainWeaponChanged(ChangeEventArgs e)
     {
         selectedMainWeapon = e.Value?.ToString();
 
-        var w = weapons.FirstOrDefault(x => x.Name == selectedMainWeapon);
+        var w = weapons.FirstOrDefault(
+            x => x.Name == selectedMainWeapon);
 
         if (w != null)
         {
@@ -794,25 +942,6 @@ private PowerLevelDto? selectedPowerLevel;
             {
                 selectedOffWeapon = null;
             }
-        }
-    }
-
-    private void OnPowerLevelChanged(ChangeEventArgs e)
-    {
-        var name = e.Value?.ToString();
-
-        selectedPowerLevel = powerLevels.FirstOrDefault(
-            p => p.Name == name);
-
-        if (selectedPowerLevel != null)
-        {
-            allowedFeatures = selectedPowerLevel.Features;
-
-            var mandatory = 9 * 5;
-
-            availablePoints = Math.Max(
-                0,
-                selectedPowerLevel.Points - mandatory);
         }
     }
 
@@ -842,6 +971,33 @@ private PowerLevelDto? selectedPowerLevel;
         return false;
     }
 
+    // ============================================================
+    // Power Level
+    // ============================================================
+
+    private void OnPowerLevelChanged(ChangeEventArgs e)
+    {
+        var name = e.Value?.ToString();
+
+        selectedPowerLevel = powerLevels.FirstOrDefault(
+            p => p.Name == name);
+
+        if (selectedPowerLevel != null)
+        {
+            allowedFeatures = selectedPowerLevel.Features;
+
+            var mandatory = 9 * 5;
+
+            availablePoints = Math.Max(
+                0,
+                selectedPowerLevel.Points - mandatory);
+        }
+    }
+
+    // ============================================================
+    // Stats
+    // ============================================================
+
     private void IncreaseStat(string key)
     {
         if (availablePoints < 5)
@@ -855,7 +1011,6 @@ private PowerLevelDto? selectedPowerLevel;
             ? currentStats[key]
             : baseVal;
 
-        // Max +20 from base
         if (cur >= baseVal + 20)
             return;
 
@@ -882,6 +1037,452 @@ private PowerLevelDto? selectedPowerLevel;
         availablePoints += 5;
     }
 
+    // ============================================================
+    // Background
+    // ============================================================
+
+    private void OnBackgroundSelected(ChangeEventArgs e)
+    {
+        var name = e.Value?.ToString();
+
+        selectedBackground =
+            string.IsNullOrEmpty(name)
+                ? null
+                : name;
+
+        // If we are no longer Aristocrat,
+        // remove both Aristocrat skill choices.
+        if (!IsAristocratBackground())
+        {
+            aristocratSkill1 = null;
+            aristocratSkill2 = null;
+        }
+
+        ReapplyAllBonusesSkillsTalentsTraits();
+    }
+
+    private void OnAristocratSkill1Changed(ChangeEventArgs e)
+    {
+        var skill = e.Value?.ToString();
+
+        aristocratSkill1 =
+            string.IsNullOrEmpty(skill)
+                ? null
+                : skill;
+
+        ReapplyAllBonusesSkillsTalentsTraits();
+    }
+
+    private void OnAristocratSkill2Changed(ChangeEventArgs e)
+    {
+        var skill = e.Value?.ToString();
+
+        aristocratSkill2 =
+            string.IsNullOrEmpty(skill)
+                ? null
+                : skill;
+
+        ReapplyAllBonusesSkillsTalentsTraits();
+    }
+
+    // ============================================================
+    // Trade
+    // ============================================================
+
+    private void OnTradeSelected(ChangeEventArgs e)
+    {
+        var name = e.Value?.ToString();
+
+        selectedTrade =
+            string.IsNullOrEmpty(name)
+                ? null
+                : name;
+
+        // Clear Scholar choice when leaving Scholar.
+        if (!IsScholarTrade())
+        {
+            scholarSkill = null;
+        }
+
+        // Clear Artisan choice when leaving Artisan.
+        if (!IsArtisanTrade())
+        {
+            artisanSkill = null;
+        }
+
+        ReapplyAllBonusesSkillsTalentsTraits();
+    }
+
+    private void OnScholarSkillChanged(ChangeEventArgs e)
+    {
+        var skill = e.Value?.ToString();
+
+        scholarSkill =
+            string.IsNullOrEmpty(skill)
+                ? null
+                : skill;
+
+        ReapplyAllBonusesSkillsTalentsTraits();
+    }
+
+    private void OnArtisanSkillChanged(ChangeEventArgs e)
+    {
+        var skill = e.Value?.ToString();
+
+        artisanSkill =
+            string.IsNullOrEmpty(skill)
+                ? null
+                : skill;
+
+        ReapplyAllBonusesSkillsTalentsTraits();
+    }
+
+    // ============================================================
+    // Motivation
+    // ============================================================
+
+    private void OnMotivationSelected(ChangeEventArgs e)
+    {
+        var name = e.Value?.ToString();
+
+        selectedMotivation =
+            string.IsNullOrEmpty(name)
+                ? null
+                : name;
+
+        ReapplyAllBonusesSkillsTalentsTraits();
+    }
+
+    // ============================================================
+    // Features
+    // ============================================================
+
+    private void OnFeatureSelected(int slot, ChangeEventArgs e)
+    {
+        var name = e.Value?.ToString();
+
+        featureWarnings.Remove(slot);
+
+        if (string.IsNullOrEmpty(name))
+        {
+            ReapplyAllBonusesSkillsTalentsTraits();
+            SetFeatureSlot(slot, null);
+            return;
+        }
+
+        var f = features.FirstOrDefault(
+            x => x.Name == name);
+
+        if (f == null)
+        {
+            featureWarnings[slot] = "Feature not found.";
+            SetFeatureSlot(slot, null);
+            return;
+        }
+
+        foreach (var kv in f.PreReqChar)
+        {
+            var stat = kv.Key;
+            var req = kv.Value;
+
+            featureBonuses.TryGetValue(
+                stat,
+                out var fb);
+
+            currentStats.TryGetValue(
+                stat,
+                out var cur);
+
+            var effective = cur + fb;
+
+            if (effective < req)
+            {
+                featureWarnings[slot] =
+                    $"Prerequisite not met: {stat} >= {req} required (current {effective})";
+
+                SetFeatureSlot(slot, null);
+                return;
+            }
+        }
+
+        SetFeatureSlot(slot, name);
+
+        ReapplyAllBonusesSkillsTalentsTraits();
+    }
+
+    private void SetFeatureSlot(
+        int slot,
+        string? name)
+    {
+        switch (slot)
+        {
+            case 1:
+                feature1 = name;
+                break;
+
+            case 2:
+                feature2 = name;
+                break;
+
+            case 3:
+                feature3 = name;
+                break;
+
+            case 4:
+                feature4 = name;
+                break;
+        }
+    }
+
+    // ============================================================
+    // Reapply all bonuses
+    // ============================================================
+
+    private void ReapplyAllBonusesSkillsTalentsTraits()
+    {
+        featureBonuses.Clear();
+        skillCounts.Clear();
+
+        totalFeatureMP = 0;
+        totalFeatureWounds = 0;
+
+        // --------------------------------------------------------
+        // Features
+        // --------------------------------------------------------
+
+        var selectedFeatures = new[]
+        {
+        feature1,
+        feature2,
+        feature3,
+        feature4
+    };
+
+        foreach (var fname in selectedFeatures)
+        {
+            if (string.IsNullOrEmpty(fname))
+                continue;
+
+            var f = features.FirstOrDefault(
+                x => x.Name == fname);
+
+            if (f == null)
+                continue;
+
+            foreach (var cb in f.CharBonuses)
+            {
+                featureBonuses.TryGetValue(
+                    cb,
+                    out var cur);
+
+                featureBonuses[cb] = cur + 5;
+            }
+
+            foreach (var sk in f.Skills)
+            {
+                AddSkillCount(sk, 1);
+            }
+
+            totalFeatureMP += f.MP;
+            totalFeatureWounds += f.Wounds;
+        }
+
+        // --------------------------------------------------------
+        // Background
+        // --------------------------------------------------------
+
+        if (!string.IsNullOrEmpty(selectedBackground))
+        {
+            var b = backgrounds.FirstOrDefault(
+                x => x.Name == selectedBackground);
+
+            if (b != null)
+            {
+                if (b.Skills != null)
+                {
+                    foreach (var sk in b.Skills)
+                    {
+                        AddSkillCount(sk, 1);
+                    }
+                }
+            }
+        }
+
+        // --------------------------------------------------------
+        // Aristocrat background choices
+        // Each choice = +1 skill count
+        // --------------------------------------------------------
+
+        if (IsAristocratBackground())
+        {
+            AddSkillCount(aristocratSkill1, 1);
+            AddSkillCount(aristocratSkill2, 1);
+        }
+
+        // --------------------------------------------------------
+        // Trade
+        // --------------------------------------------------------
+
+        if (!string.IsNullOrEmpty(selectedTrade))
+        {
+            var t = trades.FirstOrDefault(
+                x => x.Name == selectedTrade);
+
+            if (t != null)
+            {
+                if (t.Skills != null)
+                {
+                    foreach (var sk in t.Skills)
+                    {
+                        AddSkillCount(sk, 1);
+                    }
+                }
+            }
+        }
+
+        // --------------------------------------------------------
+        // Scholar trade choice
+        // Each choice = +2 skill counts
+        // --------------------------------------------------------
+
+        if (IsScholarTrade())
+        {
+            AddSkillCount(scholarSkill, 2);
+        }
+
+        // --------------------------------------------------------
+        // Artisan trade choice
+        // Each choice = +1 skill count
+        // --------------------------------------------------------
+
+        if (IsArtisanTrade())
+        {
+            AddSkillCount(artisanSkill, 1);
+        }
+
+        // --------------------------------------------------------
+        // Motivation
+        // --------------------------------------------------------
+
+        if (!string.IsNullOrEmpty(selectedMotivation))
+        {
+            var m = motivations.FirstOrDefault(
+                x => x.Name == selectedMotivation);
+
+            if (m != null)
+            {
+                if (m.Skills != null)
+                {
+                    foreach (var sk in m.Skills)
+                    {
+                        AddSkillCount(sk, 1);
+                    }
+                }
+            }
+        }
+    }
+
+    private void AddSkillCount(
+        string? skill,
+        int amount)
+    {
+        if (string.IsNullOrWhiteSpace(skill))
+            return;
+
+        skillCounts.TryGetValue(
+            skill,
+            out var current);
+
+        skillCounts[skill] = current + amount;
+    }
+
+    // ============================================================
+    // Derived values
+    // ============================================================
+
+    private int GetTotalWounds()
+    {
+        var baseWounds = 0;
+
+        if (!string.IsNullOrEmpty(selectedRace))
+        {
+            var r = races.FirstOrDefault(
+                x => x.Name == selectedRace);
+
+            if (r != null)
+                baseWounds = r.Wounds;
+        }
+
+        var con = currentStats.ContainsKey("CON")
+            ? currentStats["CON"]
+            : (baseStats.ContainsKey("CON")
+                ? baseStats["CON"]
+                : 0);
+
+        featureBonuses.TryGetValue(
+            "CON",
+            out var fb);
+
+        var effectiveCon = con + fb;
+
+        return baseWounds
+            + totalFeatureWounds
+            + (effectiveCon / 10);
+    }
+
+    private int GetTotalMP()
+    {
+        return totalFeatureMP;
+    }
+
+    private int GetArmorPoints()
+    {
+        int armorPoints = 0;
+
+        if (!string.IsNullOrEmpty(selectedArmor))
+        {
+            var a = armors.FirstOrDefault(
+                x => x.Name == selectedArmor);
+
+            if (a != null && a.ArmorPoints.HasValue)
+            {
+                armorPoints = a.ArmorPoints.Value;
+            }
+        }
+
+        var con = currentStats.ContainsKey("CON")
+            ? currentStats["CON"]
+            : (baseStats.ContainsKey("CON")
+                ? baseStats["CON"]
+                : 0);
+
+        featureBonuses.TryGetValue(
+            "CON",
+            out var fb);
+
+        var effectiveCon = con + fb;
+
+        armorPoints += effectiveCon / 10;
+
+        return armorPoints;
+    }
+
+    private string GetSkillRank(int count)
+    {
+        return count switch
+        {
+            1 => "Trained",
+            2 => "Proficient",
+            3 => "Adept",
+            >= 4 => "Expert",
+            _ => ""
+        };
+    }
+
+    // ============================================================
+    // Submit
+    // ============================================================
+
     private void Submit()
     {
         message =
@@ -891,16 +1492,18 @@ private PowerLevelDto? selectedPowerLevel;
             $"Background={selectedBackground}, " +
             $"Trade={selectedTrade}, " +
             $"Motivation={selectedMotivation}, " +
-            $"Features=[{feature1},{feature2},{feature3},{feature4}], " +
-            $"Aristocrat Skills=[{selectedBackgroundExtraSkill1},{selectedBackgroundExtraSkill2}]";
+            $"Features=[{feature1},{feature2},{feature3},{feature4}]";
     }
+
+    // ============================================================
+    // Save
+    // ============================================================
 
     private bool CanSave()
     {
-        return
-            !string.IsNullOrWhiteSpace(characterName) &&
-            !string.IsNullOrWhiteSpace(selectedLocation) &&
-            !string.IsNullOrWhiteSpace(selectedRace);
+        return !string.IsNullOrWhiteSpace(characterName)
+            && !string.IsNullOrWhiteSpace(selectedLocation)
+            && !string.IsNullOrWhiteSpace(selectedRace);
     }
 
     private async Task SaveCharacter()
@@ -919,9 +1522,16 @@ private PowerLevelDto? selectedPowerLevel;
             PowerLevel = selectedPowerLevel?.Name,
             Location = selectedLocation,
             Race = selectedRace,
+
             Background = selectedBackground,
             Trade = selectedTrade,
             Motivation = selectedMotivation,
+
+            // Save the special skill choices.
+            AristocratSkill1 = aristocratSkill1,
+            AristocratSkill2 = aristocratSkill2,
+            ScholarSkill = scholarSkill,
+            ArtisanSkill = artisanSkill,
 
             Features = new List<string>
         {
@@ -938,17 +1548,7 @@ private PowerLevelDto? selectedPowerLevel;
             OffWeapon = selectedOffWeapon,
 
             CurrentStats = currentStats,
-            AvailablePoints = availablePoints,
-
-            // These properties are included in the client DTO.
-            // If the server DTO supports them, they will also be persisted.
-            BackgroundExtraSkill1 = IsAristocratBackground
-                ? selectedBackgroundExtraSkill1
-                : null,
-
-            BackgroundExtraSkill2 = IsAristocratBackground
-                ? selectedBackgroundExtraSkill2
-                : null
+            AvailablePoints = availablePoints
         };
 
         try
@@ -1006,30 +1606,37 @@ private PowerLevelDto? selectedPowerLevel;
         }
     }
 
+    // ============================================================
+    // Spells
+    // ============================================================
+
     private void OnSpellToggled(
         string spellName,
         int xpCost,
         ChangeEventArgs e)
     {
         var isChecked =
-            e.Value?.ToString() == "true" ||
-            e.Value?.ToString() == "on";
+            e.Value?.ToString() == "true"
+            || e.Value?.ToString() == "on";
 
         if (isChecked)
         {
             if (xpPool >= xpCost)
             {
                 xpPool -= xpCost;
-                learnedSpells.Add(spellName);
+
+                learnedSpells.Add(
+                    spellName);
             }
         }
         else
         {
-            // Uncheck -> refund
             if (learnedSpells.Contains(spellName))
             {
                 xpPool += xpCost;
-                learnedSpells.Remove(spellName);
+
+                learnedSpells.Remove(
+                    spellName);
             }
         }
     }
@@ -1039,440 +1646,9 @@ private PowerLevelDto? selectedPowerLevel;
         xpPool += 50;
     }
 
-    private void OnBackgroundSelected(ChangeEventArgs e)
-    {
-        // IMPORTANT: assign even when the user selects the blank option.
-        // This allows the Aristocrat dropdowns to be cleared properly.
-        selectedBackground = e.Value?.ToString();
-
-        // If we are no longer Aristocrat, clear the two extra skills.
-        if (!IsAristocratBackground)
-        {
-            selectedBackgroundExtraSkill1 = null;
-            selectedBackgroundExtraSkill2 = null;
-        }
-
-        ReapplyAllBonusesSkillsTalentsTraits();
-    }
-
-    private void OnBackgroundExtraSkill1Changed(ChangeEventArgs e)
-    {
-        var name = e.Value?.ToString();
-
-        if (string.IsNullOrEmpty(name))
-        {
-            selectedBackgroundExtraSkill1 = null;
-        }
-        else
-        {
-            // Do not allow both dropdowns to select the same skill.
-            if (name == selectedBackgroundExtraSkill2)
-            {
-                selectedBackgroundExtraSkill1 = null;
-            }
-            else
-            {
-                selectedBackgroundExtraSkill1 = name;
-            }
-        }
-
-        ReapplyAllBonusesSkillsTalentsTraits();
-    }
-
-    private void OnBackgroundExtraSkill2Changed(ChangeEventArgs e)
-    {
-        var name = e.Value?.ToString();
-
-        if (string.IsNullOrEmpty(name))
-        {
-            selectedBackgroundExtraSkill2 = null;
-        }
-        else
-        {
-            // Do not allow both dropdowns to select the same skill.
-            if (name == selectedBackgroundExtraSkill1)
-            {
-                selectedBackgroundExtraSkill2 = null;
-            }
-            else
-            {
-                selectedBackgroundExtraSkill2 = name;
-            }
-        }
-
-        ReapplyAllBonusesSkillsTalentsTraits();
-    }
-
-    private List<SkillOption> GetAvailableAristocratSkills(int dropdownNumber)
-    {
-        var backgroundSkills =
-            backgrounds
-                .FirstOrDefault(x => x.Name == selectedBackground)?
-                .Skills
-                ?? new List<string>();
-
-        return aristocratSkillOptions
-            .Where(skill =>
-                // Don't offer a skill already granted by the background.
-                !backgroundSkills.Contains(
-                    skill.Name,
-                    StringComparer.OrdinalIgnoreCase))
-
-            .Where(skill =>
-                // Dropdown 1 excludes the current selection of dropdown 2.
-                // Dropdown 2 excludes the current selection of dropdown 1.
-                dropdownNumber == 1
-                    ? skill.Name != selectedBackgroundExtraSkill2
-                    : skill.Name != selectedBackgroundExtraSkill1)
-
-            .ToList();
-    }
-
-    private void OnTradeSelected(ChangeEventArgs e)
-    {
-        selectedTrade = e.Value?.ToString();
-
-        ReapplyAllBonusesSkillsTalentsTraits();
-    }
-
-    private void OnMotivationSelected(ChangeEventArgs e)
-    {
-        selectedMotivation = e.Value?.ToString();
-
-        ReapplyAllBonusesSkillsTalentsTraits();
-    }
-
-    private void OnFeatureSelected(
-        int slot,
-        ChangeEventArgs e)
-    {
-        var name = e.Value?.ToString();
-
-        // Clear prior warning
-        featureWarnings.Remove(slot);
-
-        if (string.IsNullOrEmpty(name))
-        {
-            // Clearing selection: remove prior applied bonuses
-            // for that slot by reapplying all selected features.
-            SetFeatureSlot(slot, null);
-            ReapplyAllBonusesSkillsTalentsTraits();
-            return;
-        }
-
-        var f = features.FirstOrDefault(
-            x => x.Name == name);
-
-        if (f == null)
-        {
-            featureWarnings[slot] = "Feature not found.";
-            SetFeatureSlot(slot, null);
-            ReapplyAllBonusesSkillsTalentsTraits();
-            return;
-        }
-
-        // Check prerequisites
-        foreach (var kv in f.PreReqChar)
-        {
-            var stat = kv.Key;
-            var req = kv.Value;
-
-            featureBonuses.TryGetValue(
-                stat,
-                out var fb);
-
-            currentStats.TryGetValue(
-                stat,
-                out var cur);
-
-            var effective = cur + fb;
-
-            if (effective < req)
-            {
-                featureWarnings[slot] =
-                    $"Prerequisite not met: {stat} >= {req} required (current {effective})";
-
-                SetFeatureSlot(slot, null);
-                ReapplyAllBonusesSkillsTalentsTraits();
-
-                return;
-            }
-        }
-
-        // Valid feature
-        SetFeatureSlot(slot, name);
-
-        ReapplyAllBonusesSkillsTalentsTraits();
-    }
-
-    private void SetFeatureSlot(
-        int slot,
-        string? name)
-    {
-        switch (slot)
-        {
-            case 1:
-                feature1 = name;
-                break;
-
-            case 2:
-                feature2 = name;
-                break;
-
-            case 3:
-                feature3 = name;
-                break;
-
-            case 4:
-                feature4 = name;
-                break;
-        }
-    }
-
-    private void ReapplyAllBonusesSkillsTalentsTraits()
-    {
-        featureBonuses.Clear();
-        skillCounts.Clear();
-
-        totalFeatureMP = 0;
-        totalFeatureWounds = 0;
-
-        // ------------------------------------------------------------
-        // Apply Features
-        // ------------------------------------------------------------
-
-        var selectedFeatures = new[]
-        {
-        feature1,
-        feature2,
-        feature3,
-        feature4
-    };
-
-        foreach (var fname in selectedFeatures)
-        {
-            if (string.IsNullOrEmpty(fname))
-                continue;
-
-            var f = features.FirstOrDefault(
-                x => x.Name == fname);
-
-            if (f == null)
-                continue;
-
-            foreach (var cb in f.CharBonuses)
-            {
-                featureBonuses.TryGetValue(
-                    cb,
-                    out var cur);
-
-                featureBonuses[cb] =
-                    cur + 5;
-            }
-
-            foreach (var sk in f.Skills)
-            {
-                skillCounts.TryGetValue(
-                    sk,
-                    out var sc);
-
-                skillCounts[sk] =
-                    sc + 1;
-            }
-
-            totalFeatureMP += f.MP;
-            totalFeatureWounds += f.Wounds;
-        }
-
-        // ------------------------------------------------------------
-        // Apply Background
-        // ------------------------------------------------------------
-
-        if (!string.IsNullOrEmpty(selectedBackground))
-        {
-            var b = backgrounds.FirstOrDefault(
-                x => x.Name == selectedBackground);
-
-            if (b != null)
-            {
-                if (b.Skills != null)
-                {
-                    foreach (var sk in b.Skills)
-                    {
-                        skillCounts.TryGetValue(
-                            sk,
-                            out var sc);
-
-                        skillCounts[sk] =
-                            sc + 1;
-                    }
-                }
-            }
-        }
-
-        // ------------------------------------------------------------
-        // Apply Aristocrat Extra Skills
-        //
-        // These are intentionally applied only when the current
-        // background is Aristocrat.
-        // ------------------------------------------------------------
-
-        if (IsAristocratBackground)
-        {
-            if (!string.IsNullOrEmpty(selectedBackgroundExtraSkill1))
-            {
-                skillCounts.TryGetValue(
-                    selectedBackgroundExtraSkill1,
-                    out var sc);
-
-                skillCounts[selectedBackgroundExtraSkill1] =
-                    sc + 1;
-            }
-
-            if (!string.IsNullOrEmpty(selectedBackgroundExtraSkill2))
-            {
-                skillCounts.TryGetValue(
-                    selectedBackgroundExtraSkill2,
-                    out var sc);
-
-                skillCounts[selectedBackgroundExtraSkill2] =
-                    sc + 1;
-            }
-        }
-
-        // ------------------------------------------------------------
-        // Apply Trade
-        // ------------------------------------------------------------
-
-        if (!string.IsNullOrEmpty(selectedTrade))
-        {
-            var t = trades.FirstOrDefault(
-                x => x.Name == selectedTrade);
-
-            if (t != null && t.Skills != null)
-            {
-                foreach (var sk in t.Skills)
-                {
-                    skillCounts.TryGetValue(
-                        sk,
-                        out var sc);
-
-                    skillCounts[sk] =
-                        sc + 1;
-                }
-            }
-        }
-
-        // ------------------------------------------------------------
-        // Apply Motivation
-        // ------------------------------------------------------------
-
-        if (!string.IsNullOrEmpty(selectedMotivation))
-        {
-            var m = motivations.FirstOrDefault(
-                x => x.Name == selectedMotivation);
-
-            if (m != null && m.Skills != null)
-            {
-                foreach (var sk in m.Skills)
-                {
-                    skillCounts.TryGetValue(
-                        sk,
-                        out var sc);
-
-                    skillCounts[sk] =
-                        sc + 1;
-                }
-            }
-        }
-    }
-
-    private int GetTotalWounds()
-    {
-        var baseWounds = 0;
-
-        if (!string.IsNullOrEmpty(selectedRace))
-        {
-            var r = races.FirstOrDefault(
-                x => x.Name == selectedRace);
-
-            if (r != null)
-                baseWounds = r.Wounds;
-        }
-
-        var con =
-            currentStats.ContainsKey("CON")
-                ? currentStats["CON"]
-                : (baseStats.ContainsKey("CON")
-                    ? baseStats["CON"]
-                    : 0);
-
-        featureBonuses.TryGetValue(
-            "CON",
-            out var fb);
-
-        var effectiveCon =
-            con + fb;
-
-        return
-            baseWounds +
-            totalFeatureWounds +
-            (effectiveCon / 10);
-    }
-
-    private int GetTotalMP()
-    {
-        return totalFeatureMP;
-    }
-
-    private int GetArmorPoints()
-    {
-        int armorPoints = 0;
-
-        if (!string.IsNullOrEmpty(selectedArmor))
-        {
-            var a = armors.FirstOrDefault(
-                x => x.Name == selectedArmor);
-
-            if (a != null && a.ArmorPoints.HasValue)
-            {
-                armorPoints =
-                    a.ArmorPoints.Value;
-            }
-        }
-
-        // Add CON bonus
-        var con =
-            currentStats.ContainsKey("CON")
-                ? currentStats["CON"]
-                : (baseStats.ContainsKey("CON")
-                    ? baseStats["CON"]
-                    : 0);
-
-        featureBonuses.TryGetValue(
-            "CON",
-            out var fb);
-
-        var effectiveCon =
-            con + fb;
-
-        armorPoints +=
-            effectiveCon / 10;
-
-        return armorPoints;
-    }
-
-    private string GetSkillRank(int count)
-    {
-        return count switch
-        {
-            1 => "Trained",
-            2 => "Proficient",
-            3 => "Adept",
-            >= 4 => "Expert",
-            _ => ""
-        };
-    }
+    // ============================================================
+    // Load
+    // ============================================================
 
     private async Task LoadSavedFiles()
     {
@@ -1511,55 +1687,62 @@ private PowerLevelDto? selectedPowerLevel;
 
                 selectedLocation = dto.Location;
 
-                var loc =
-                    locations.FirstOrDefault(
-                        l => l.Name == selectedLocation);
+                var loc = locations.FirstOrDefault(
+                    l => l.Name == selectedLocation);
 
                 raceOptions =
                     loc?.Races ?? raceOptions;
 
                 selectedRace = dto.Race;
 
-                // Populate base stats from race definition
+                // ------------------------------------------------
+                // Base stats
+                // ------------------------------------------------
+
                 var raceDef =
                     races.FirstOrDefault(
                         x => x.Name == selectedRace);
 
                 if (raceDef != null)
                 {
-                    baseStats =
-                        new Dictionary<string, int>
-                        {
-                            ["MSK"] = raceDef.MSK,
-                            ["RSK"] = raceDef.RSK,
-                            ["STR"] = raceDef.STR,
-                            ["AGI"] = raceDef.AGI,
-                            ["CON"] = raceDef.CON,
-                            ["INT"] = raceDef.INT,
-                            ["PER"] = raceDef.PER,
-                            ["WPR"] = raceDef.WPR,
-                            ["CHA"] = raceDef.CHA
-                        };
+                    baseStats = new Dictionary<string, int>
+                    {
+                        ["MSK"] = raceDef.MSK,
+                        ["RSK"] = raceDef.RSK,
+                        ["STR"] = raceDef.STR,
+                        ["AGI"] = raceDef.AGI,
+                        ["CON"] = raceDef.CON,
+                        ["INT"] = raceDef.INT,
+                        ["PER"] = raceDef.PER,
+                        ["WPR"] = raceDef.WPR,
+                        ["CHA"] = raceDef.CHA
+                    };
                 }
+
+                // ------------------------------------------------
+                // Background / Trade / Motivation
+                // ------------------------------------------------
 
                 selectedBackground = dto.Background;
                 selectedTrade = dto.Trade;
                 selectedMotivation = dto.Motivation;
 
-                // Restore Aristocrat extra skills if the server supports them.
-                if (IsAristocratBackground)
-                {
-                    selectedBackgroundExtraSkill1 =
-                        dto.BackgroundExtraSkill1;
+                // Restore special skill choices.
+                aristocratSkill1 =
+                    dto.AristocratSkill1;
 
-                    selectedBackgroundExtraSkill2 =
-                        dto.BackgroundExtraSkill2;
-                }
-                else
-                {
-                    selectedBackgroundExtraSkill1 = null;
-                    selectedBackgroundExtraSkill2 = null;
-                }
+                aristocratSkill2 =
+                    dto.AristocratSkill2;
+
+                scholarSkill =
+                    dto.ScholarSkill;
+
+                artisanSkill =
+                    dto.ArtisanSkill;
+
+                // ------------------------------------------------
+                // Features
+                // ------------------------------------------------
 
                 feature1 =
                     dto.Features != null &&
@@ -1589,7 +1772,10 @@ private PowerLevelDto? selectedPowerLevel;
                 selectedMainWeapon = dto.MainWeapon;
                 selectedOffWeapon = dto.OffWeapon;
 
-                // Restore current stats
+                // ------------------------------------------------
+                // Current stats
+                // ------------------------------------------------
+
                 if (dto.CurrentStats != null &&
                     dto.CurrentStats.Count > 0)
                 {
@@ -1606,21 +1792,52 @@ private PowerLevelDto? selectedPowerLevel;
                             kv => kv.Value + 5);
                 }
 
-                // Restore available points
+                // ------------------------------------------------
+                // Available points
+                // ------------------------------------------------
+
                 availablePoints =
                     dto.AvailablePoints;
 
-                // Ensure allowed features reflect selected power level
                 if (selectedPowerLevel != null)
                 {
                     allowedFeatures =
                         selectedPowerLevel.Features;
                 }
 
-                saveMessage = "Loaded.";
+                // ------------------------------------------------
+                // Safety cleanup
+                // ------------------------------------------------
 
-                // Re-apply all effects
+                // Only keep Aristocrat choices if the loaded
+                // background is actually Aristocrat.
+                if (!IsAristocratBackground())
+                {
+                    aristocratSkill1 = null;
+                    aristocratSkill2 = null;
+                }
+
+                // Only keep Scholar choice if Scholar is selected.
+                if (!IsScholarTrade())
+                {
+                    scholarSkill = null;
+                }
+
+                // Only keep Artisan choice if Artisan is selected.
+                if (!IsArtisanTrade())
+                {
+                    artisanSkill = null;
+                }
+
+                // ------------------------------------------------
+                // Reapply everything.
+                // This handles feature skills, lookup skills,
+                // Aristocrat, Scholar, and Artisan selections.
+                // ------------------------------------------------
+
                 ReapplyAllBonusesSkillsTalentsTraits();
+
+                saveMessage = "Loaded.";
             }
         }
         catch (Exception ex)
@@ -1629,6 +1846,10 @@ private PowerLevelDto? selectedPowerLevel;
                 "Load error: " + ex.Message;
         }
     }
+
+    // ============================================================
+    // Diagnostics / Save Path
+    // ============================================================
 
     private async Task LoadDiagnostics()
     {
@@ -1748,136 +1969,223 @@ private PowerLevelDto? selectedPowerLevel;
         }
     }
 
-    // Incorporate skills/talents from background/trade/motivation
-    // when selected.
+    // ============================================================
+    // Legacy lookup bonus helper
+    // ============================================================
+
     private void ApplyLookupBonuses()
     {
-        ReapplyAllBonusesSkillsTalentsTraits();
-    }
+        skillCounts.Clear();
 
-    private class SkillOption
-    {
-        public string Name { get; }
-        public int Id { get; }
-
-        public SkillOption(
-            string name,
-            int id)
+        var lookups = new[]
         {
-            Name = name;
-            Id = id;
+        selectedBackground,
+        selectedTrade,
+        selectedMotivation
+    };
+
+        foreach (var name in lookups)
+        {
+            if (string.IsNullOrEmpty(name))
+                continue;
+
+            var b = backgrounds.FirstOrDefault(
+                x => x.Name == name);
+
+            if (b != null &&
+                b.Skills != null)
+            {
+                foreach (var sk in b.Skills)
+                {
+                    AddSkillCount(sk, 1);
+                }
+            }
+
+            if (b != null &&
+                !string.IsNullOrEmpty(b.Talent))
+            {
+                // Mark talent as a learned talent.
+                // Talent UI not implemented yet.
+            }
+
+            if (b != null &&
+                b.Traits != null)
+            {
+                // Traits can be shown elsewhere.
+            }
         }
     }
+
+    // ============================================================
+    // DTOs
+    // ============================================================
 
     private class ClientCharacterDto
     {
         public string? Name { get; set; }
+
         public string? PowerLevel { get; set; }
+
         public string? Location { get; set; }
+
         public string? Race { get; set; }
+
         public string? Background { get; set; }
+
         public string? Trade { get; set; }
+
         public string? Motivation { get; set; }
+
+        // Special background / trade skill choices.
+        public string? AristocratSkill1 { get; set; }
+
+        public string? AristocratSkill2 { get; set; }
+
+        public string? ScholarSkill { get; set; }
+
+        public string? ArtisanSkill { get; set; }
 
         public List<string>? Features { get; set; }
 
         public string? Armor { get; set; }
+
         public string? MainWeapon { get; set; }
+
         public string? OffWeapon { get; set; }
 
         public Dictionary<string, int>? CurrentStats { get; set; }
-        public int AvailablePoints { get; set; }
 
-        // Aristocrat additional skills
-        public string? BackgroundExtraSkill1 { get; set; }
-        public string? BackgroundExtraSkill2 { get; set; }
+        public int AvailablePoints { get; set; }
     }
 
     private class LocationDto
     {
         public string? Name { get; set; }
+
         public List<string>? Races { get; set; }
     }
 
     private class SimpleDto
     {
         public string? Name { get; set; }
+
         public string? Description { get; set; }
+
         public string? AdditionalNotes { get; set; }
+
         public List<string>? Skills { get; set; }
+
         public string? Talent { get; set; }
+
         public List<string>? Traits { get; set; }
+
         public List<string>? Equipment { get; set; }
     }
 
     private class WeaponDto
     {
         public string? Name { get; set; }
+
         public string? Hands { get; set; }
+
         public string? Range { get; set; }
+
         public string? Damage { get; set; }
+
         public int Penetration { get; set; }
+
         public string? DamageTypes { get; set; }
+
         public string? Traits { get; set; }
     }
 
     private class ArmorDto
     {
         public string? Name { get; set; }
+
         public int? ArmorPoints { get; set; }
     }
 
     private class RaceDto
     {
         public string? Name { get; set; }
+
         public int Wounds { get; set; }
+
         public int MSK { get; set; }
+
         public int RSK { get; set; }
+
         public int STR { get; set; }
+
         public int AGI { get; set; }
+
         public int CON { get; set; }
+
         public int INT { get; set; }
+
         public int PER { get; set; }
+
         public int WPR { get; set; }
+
         public int CHA { get; set; }
     }
 
     private class PowerLevelDto
     {
         public string? Name { get; set; }
+
         public int Points { get; set; }
+
         public int Features { get; set; }
+
         public string? Description { get; set; }
     }
 
     private class DiagnosticsInfo
     {
         public string? SaveFolder { get; set; }
+
         public bool FolderExists { get; set; }
+
         public bool CanWrite { get; set; }
+
         public string? WriteTestError { get; set; }
+
         public string? DriveRoot { get; set; }
+
         public long AvailableFreeBytes { get; set; }
+
         public string? ServerUser { get; set; }
     }
 
     private class SpellDto
     {
         public string? Name { get; set; }
+
         public int XpCost { get; set; }
+
         public int MP { get; set; }
+
         public int CastDifficulty { get; set; }
+
         public string? MagicSchool { get; set; }
+
         public int Range { get; set; }
+
         public int NumTargets { get; set; }
     }
 
     private class FeatureDto
     {
         public string? Name { get; set; }
+
         public int MP { get; set; }
+
         public int Wounds { get; set; }
+
         public string? Armor { get; set; }
+
         public string? Description { get; set; }
 
         public List<string> CharBonuses { get; set; } =
@@ -1889,4 +2197,5 @@ private PowerLevelDto? selectedPowerLevel;
         public List<string> Skills { get; set; } =
             new List<string>();
     }
+
 }
