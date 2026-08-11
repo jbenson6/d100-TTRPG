@@ -1,3 +1,4 @@
+using d100_TTRPG;
 using d100_TTRPG.Client.Pages;
 using d100_TTRPG.Components;
 
@@ -44,6 +45,9 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(d100_TTRPG.Client._Imports).Assembly);
+
+// Force all game databases to initialize before handling requests.
+GameDatabaseInitializer.Initialize();
 
 app.Run();
 
