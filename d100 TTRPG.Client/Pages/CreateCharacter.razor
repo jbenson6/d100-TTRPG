@@ -16,36 +16,6 @@
             {
                 <option value="@p.Name" selected="@(selectedPowerLevel != null && p.Name == selectedPowerLevel.Name)">@p.Name (@p.Points pts, @p.Features features)</option>
             }
-
-    // incorporate skills/talents from background/trade/motivation when selected
-    private void ApplyLookupBonuses()
-    {
-        // Clear previous
-        skillCounts.Clear();
-
-        var lookups = new[] { selectedBackground, selectedTrade, selectedMotivation };
-        foreach (var name in lookups)
-        {
-            if (string.IsNullOrEmpty(name)) continue;
-            var b = backgrounds.FirstOrDefault(x => x.Name == name);
-            if (b != null && b.Skills != null)
-            {
-                foreach (var sk in b.Skills)
-                {
-                    skillCounts.TryGetValue(sk, out var sc);
-                    skillCounts[sk] = sc + 1;
-                }
-            }
-            if (b != null && !string.IsNullOrEmpty(b.Talent))
-            {
-                // mark talent as a learned talent - not implemented UI for talents yet
-            }
-            if (b != null && b.Traits != null)
-            {
-                // traits can be shown elsewhere
-            }
-        }
-    }
         </select>
     </div>
 
@@ -149,33 +119,33 @@
     <div class="row">
         <div class="col-md-4 mb-3">
             <label class="form-label">Background</label>
-            <select class="form-select" @bind="selectedBackground">
+            <select class="form-select" @onchange="e => OnBackgroundSelected(e)">
                 <option value="">(Select background)</option>
                 @foreach (var b in backgrounds)
                 {
-                    <option value="@b.Name">@b.Name</option>
+                    <option value="@b.Name" selected="@(selectedBackground == b.Name)">@b.Name</option>
                 }
             </select>
         </div>
 
         <div class="col-md-4 mb-3">
             <label class="form-label">Trade</label>
-            <select class="form-select" @bind="selectedTrade">
+            <select class="form-select" @onchange="e => OnTradeSelected(e)">
                 <option value="">(Select trade)</option>
                 @foreach (var t in trades)
                 {
-                    <option value="@t.Name">@t.Name</option>
+                    <option value="@t.Name" selected="@(selectedTrade == t.Name)">@t.Name</option>
                 }
             </select>
         </div>
 
         <div class="col-md-4 mb-3">
             <label class="form-label">Motivation</label>
-            <select class="form-select" @bind="selectedMotivation">
+            <select class="form-select" @onchange="e => OnMotivationSelected(e)">
                 <option value="">(Select motivation)</option>
                 @foreach (var m in motivations)
                 {
-                    <option value="@m.Name">@m.Name</option>
+                    <option value="@m.Name" selected="@(selectedMotivation == m.Name)">@m.Name</option>
                 }
             </select>
         </div>
@@ -713,6 +683,39 @@
 
     private HashSet<string> learnedSpells = new();
 
+    private void OnBackgroundSelected(ChangeEventArgs e)
+    {
+        var name = e.Value?.ToString();
+        if (!string.IsNullOrEmpty(name))
+        {
+            selectedBackground = name;
+        }
+
+        ReapplyAllBonusesSkillsTalentsTraits();
+    }
+
+    private void OnTradeSelected(ChangeEventArgs e)
+    {
+        var name = e.Value?.ToString();
+        if (!string.IsNullOrEmpty(name))
+        {
+            selectedTrade = name;
+        }
+
+        ReapplyAllBonusesSkillsTalentsTraits();
+    }
+
+    private void OnMotivationSelected(ChangeEventArgs e)
+    {
+        var name = e.Value?.ToString();
+        if (!string.IsNullOrEmpty(name))
+        {
+            selectedMotivation = name;
+        }
+
+        ReapplyAllBonusesSkillsTalentsTraits();
+    }
+
     private void OnFeatureSelected(int slot, ChangeEventArgs e)
     {
         var name = e.Value?.ToString();
@@ -722,7 +725,7 @@
         if (string.IsNullOrEmpty(name))
         {
             // clearing selection: remove prior applied bonuses for that slot by reapplying all selected features
-            ReapplyAllFeatures();
+            ReapplyAllBonusesSkillsTalentsTraits();
             SetFeatureSlot(slot, null);
             return;
         }
@@ -753,7 +756,7 @@
 
         // ok apply: set slot then reapply all features to compute bonuses consistently
         SetFeatureSlot(slot, name);
-        ReapplyAllFeatures();
+        ReapplyAllBonusesSkillsTalentsTraits();
     }
 
     private void SetFeatureSlot(int slot, string? name)
@@ -767,13 +770,14 @@
         }
     }
 
-    private void ReapplyAllFeatures()
+    private void ReapplyAllBonusesSkillsTalentsTraits()
     {
         featureBonuses.Clear();
         skillCounts.Clear();
         totalFeatureMP = 0;
         totalFeatureWounds = 0;
 
+        //Apply features
         var selected = new[] { feature1, feature2, feature3, feature4 };
         foreach (var fname in selected)
         {
@@ -792,6 +796,54 @@
             }
             totalFeatureMP += f.MP;
             totalFeatureWounds += f.Wounds;
+        }
+        //Apply Background
+        if (!string.IsNullOrEmpty(selectedBackground))
+        {
+            var b = backgrounds.FirstOrDefault(x => x.Name == selectedBackground);
+            if (b != null)
+            {
+                if (b.Skills != null)
+                {
+                    foreach (var sk in b.Skills)
+                    {
+                        skillCounts.TryGetValue(sk, out var sc);
+                        skillCounts[sk] = sc + 1;
+                    }
+                }
+            }
+        }
+        //Apply Trade
+        if (!string.IsNullOrEmpty(selectedTrade))
+        {
+            var t = trades.FirstOrDefault(x => x.Name == selectedTrade);
+            if (t != null)
+            {
+                if (t.Skills != null)
+                {
+                    foreach (var sk in t.Skills)
+                    {
+                        skillCounts.TryGetValue(sk, out var sc);
+                        skillCounts[sk] = sc + 1;
+                    }
+                }
+            }
+        }
+        //Apply motivation
+        if (!string.IsNullOrEmpty(selectedMotivation))
+        {
+            var m = motivations.FirstOrDefault(x => x.Name == selectedMotivation);
+            if (m != null)
+            {
+                if (m.Skills != null)
+                {
+                    foreach (var sk in m.Skills)
+                    {
+                        skillCounts.TryGetValue(sk, out var sc);
+                        skillCounts[sk] = sc + 1;
+                    }
+                }
+            }
         }
     }
 
@@ -1024,6 +1076,36 @@
         catch (Exception ex)
         {
             saveMessage = "Reset error: " + ex.Message;
+        }
+    }
+
+    // incorporate skills/talents from background/trade/motivation when selected
+    private void ApplyLookupBonuses()
+    {
+        // Clear previous
+        skillCounts.Clear();
+
+        var lookups = new[] { selectedBackground, selectedTrade, selectedMotivation };
+        foreach (var name in lookups)
+        {
+            if (string.IsNullOrEmpty(name)) continue;
+            var b = backgrounds.FirstOrDefault(x => x.Name == name);
+            if (b != null && b.Skills != null)
+            {
+                foreach (var sk in b.Skills)
+                {
+                    skillCounts.TryGetValue(sk, out var sc);
+                    skillCounts[sk] = sc + 1;
+                }
+            }
+            if (b != null && !string.IsNullOrEmpty(b.Talent))
+            {
+                // mark talent as a learned talent - not implemented UI for talents yet
+            }
+            if (b != null && b.Traits != null)
+            {
+                // traits can be shown elsewhere
+            }
         }
     }
 

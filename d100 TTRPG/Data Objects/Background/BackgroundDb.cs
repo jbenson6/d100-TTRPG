@@ -60,7 +60,9 @@ namespace d100_TTRPG.Data_Objects.Background
 
                 new List<Skill.SkillDefinition>
                 {
-                SkillDb.Survival
+                    SkillDb.Survival,
+                    SkillDb.Nature,
+                    SkillDb.History
                 },
 
                 ""
@@ -77,7 +79,10 @@ namespace d100_TTRPG.Data_Objects.Background
 
                 TalentDb.SkillFocus,
 
-                new List<Skill.SkillDefinition>(),
+                new List<Skill.SkillDefinition>
+                {
+                    SkillDb.Local
+                },
 
                 ""
             );
