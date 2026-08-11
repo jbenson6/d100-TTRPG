@@ -8,6 +8,44 @@
 
 <h1>Create Character</h1>
 
+<div class="card p-3 mb-3">
+
+    <h5>Load</h5>
+
+    <div class="row g-2 align-items-center">
+        <div class="col-auto">
+
+            <select class="form-select"
+                    style="min-width:240px"
+                    @bind="selectedSavedFile">
+
+                <option value="">
+                    (Select saved file)
+                </option>
+
+                @foreach (var f in savedFiles)
+                {
+                    <option value="@f">
+                        @f
+                    </option>
+                }
+
+            </select>
+
+        </div>
+
+        <div class="col-auto">
+
+            <button class="btn btn-secondary"
+                    @onclick="LoadCharacter"
+                    disabled="@(string.IsNullOrEmpty(selectedSavedFile))">
+                Load
+            </button>
+
+        </div>
+    </div>
+</div>
+
 <div class="card p-3">
 
     <div class="mb-3">
@@ -887,7 +925,7 @@
 
 <div class="card p-3 mt-3">
 
-    <h5>Save / Load</h5>
+    <h5>Save</h5>
 
     <div class="row g-2 align-items-center">
 
@@ -897,37 +935,6 @@
                     @onclick="SaveCharacter"
                     disabled="@(!CanSave())">
                 Save
-            </button>
-
-        </div>
-
-        <div class="col-auto">
-
-            <select class="form-select"
-                    style="min-width:240px"
-                    @bind="selectedSavedFile">
-
-                <option value="">
-                    (Select saved file)
-                </option>
-
-                @foreach (var f in savedFiles)
-                {
-                    <option value="@f">
-                        @f
-                    </option>
-                }
-
-            </select>
-
-        </div>
-
-        <div class="col-auto">
-
-            <button class="btn btn-secondary"
-                    @onclick="LoadCharacter"
-                    disabled="@(string.IsNullOrEmpty(selectedSavedFile))">
-                Load
             </button>
 
         </div>
