@@ -1082,7 +1082,7 @@
             Character.PurchasedSpells != null
                 ? new HashSet<string>(Character.PurchasedSpells)
                 : new HashSet<string>();
-        
+
         learnedSpells =
                     Character.LearnedSpells != null
                         ? new HashSet<string>(Character.LearnedSpells)
@@ -1090,6 +1090,19 @@
 
         xpPool = Character.XpPool;
         xpSpent = Character.XpSpent;
+
+        Dictionary<int, string> dict = new Dictionary<int, string>();
+        for (int i = 0; i < Character.Features.Count; i++)
+        {
+            dict.Add(i + 1, Character.Features[i]);
+        }
+
+        featuresSelected = dict;
+
+        talents =
+                    Character.Talents != null
+                        ? new List<string>(Character.Talents)
+                        : new List<string>();
 
     }
 

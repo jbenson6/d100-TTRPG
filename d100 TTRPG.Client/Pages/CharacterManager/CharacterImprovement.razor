@@ -5,6 +5,10 @@
 
 <div class="mb-2">
 
+    <!-- ================================================= -->
+    <!-- XP -->
+    <!-- ================================================= -->
+
     <div class="row">
         <div class="col-md-8">
 
@@ -56,39 +60,48 @@
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-md-6">
+
+    <!-- ================================================= -->
+    <!-- IMPROVEMENTS -->
+    <!-- ================================================= -->
+
+    <div class="row mt-3">
+
+        <!-- ================================================= -->
+        <!-- SPELLS -->
+        <!-- ================================================= -->
+
+        <div class="col-md-4">
 
             <h6>Spells</h6>
 
             @if (spells != null && spells.Any())
             {
-                <div class="col-md-6">
+                @foreach (var s in spells
+                    .Where(s => s.MP <= GetTotalMP())
+                    .OrderBy(s => s.Name))
+                {
+                    var spellName = s.Name ?? "";
 
-                    <h6>Available</h6>
+                    var isLearned =
+                        learnedSpells.Contains(spellName);
 
-                    @foreach (var s in spells
-                        .Where(s => s.MP <= GetTotalMP())
-                        .OrderBy(s => s.Name))
-                    {
-                        var isLearned =
-                            learnedSpells.Contains(s.Name ?? "");
+                    <div class="mb-1">
 
-                        <div class="mb-1">
+                        <input type="checkbox"
+                               checked="@isLearned"
+                               disabled="@(!isLearned && xpRemaining < s.XpCost)"
+                               @onchange="e => OnSpellToggled(
+                                                           s.Name,
+                                                           s.XpCost,
+                                                           e)" />
 
-                            <input type="checkbox"
-                                   checked="@isLearned"
-                                   disabled="@(!isLearned && xpRemaining < s.XpCost)"
-                                   @onchange="e => OnSpellToggled(s.Name, s.XpCost, e)" />
+<label class="ms-1">
+                            @s.Name (@s.XpCost xp)
+                        </label>
 
-                            <label class="ms-1">
-                                @s.Name (@s.XpCost xp)
-                            </label>
-
-                        </div>
-                    }
-
-                </div>
+                    </div>
+                }
             }
             else
             {
@@ -98,66 +111,259 @@
             }
 
         </div>
+
+
+        <!-- ================================================= -->
+        <!-- TALENTS -->
+        <!-- ================================================= -->
+
+        <div class="col-md-4">
+
+            <h6>Talents</h6>
+
+            @if (talents != null && talents.Any())
+            {
+                @foreach (var t in talents
+                    .Where(t => !string.IsNullOrWhiteSpace(t.Name))
+                    .OrderBy(t => t.Name))
+                {
+                    var talentName = t.Name ?? "";
+
+                    var isOwned =
+                        characterTalents.Contains(talentName);
+
+                    var isPurchased =
+                        purchasedTalents.Contains(talentName);
+
+                    var isChecked =
+                        isOwned || isPurchased;
+
+                    var xpCost =
+                        t.XpCost;
+
+                    <div class="mb-1">
+
+                        <input type="checkbox"
+                               checked="@isChecked"
+                               disabled="@(!isChecked && xpRemaining < xpCost)"
+                               @onchange="e => OnTalentToggled(
+                                                           talentName,
+                                                           xpCost,
+                                                           e)" />
+
+<label class="ms-1">
+                            @talentName (@xpCost xp)
+                        </label>
+
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-muted">
+                    No talents loaded.
+                </div>
+            }
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- FEATURES -->
+        <!-- ================================================= -->
+
+        <div class="col-md-4">
+
+            <h6>Features</h6>
+
+            @if (features != null && features.Any())
+            {
+                @foreach (var f in features
+                    .Where(f => !string.IsNullOrWhiteSpace(f.Name))
+                    .OrderBy(f => f.Name))
+                {
+                    var featureName = f.Name ?? "";
+
+                    var isOwned =
+                        characterFeatures.Contains(featureName);
+
+                    var isPurchased =
+                        purchasedFeatures.Contains(featureName);
+
+                    var isChecked =
+                        isOwned || isPurchased;
+
+                    const int featureXpCost = 1000;
+
+                    <div class="mb-1">
+
+                        <input type="checkbox"
+                               checked="@isChecked"
+                               disabled="@(!isChecked && xpRemaining < featureXpCost)"
+                               @onchange="e => OnFeatureToggled(
+                                                           featureName,
+                                                           featureXpCost,
+                                                           e)" />
+
+<label class="ms-1">
+                            @featureName (@featureXpCost xp)
+                        </label>
+
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-muted">
+                    No features loaded.
+                </div>
+            }
+
+        </div>
+
     </div>
 
 </div>
-@code {
-    private List<SpellDto> spells = new();
-    private HashSet<string> learnedSpells = new();
-    private HashSet<string> purchasedSpells = new();
 
-    private int xpPool = 1000;
-    private int xpSpent = 0;
-    private int characterMP = 0;
+
+@code {
+
+    // ============================================================
+    // DATA
+    // ============================================================
+
+    private List<SpellDto> spells = new();
+
+    private List<TalentDto> talents = new();
+
+    private List<FeatureDto> features = new();
 
     private List<LocationDto> locations = new();
+
     private List<string> raceOptions = new();
+
     private List<SimpleDto> backgrounds = new();
+
     private List<SimpleDto> trades = new();
+
     private List<SimpleDto> motivations = new();
-    private List<FeatureDto> features = new();
+
     private List<WeaponDto> weapons = new();
+
     private List<ArmorDto> armors = new();
+
     private List<RaceDto> races = new();
+
     private List<PowerLevelDto> powerLevels = new();
+
+
+    // ============================================================
+    // SPELL TRACKING
+    // ============================================================
+
+    private HashSet<string> learnedSpells = new();
+
+    private HashSet<string> purchasedSpells = new();
+
+
+    // ============================================================
+    // TALENT TRACKING
+    // ============================================================
+
+    // Talents the character already owns from character creation,
+    // race, background, trade, etc.
+    private HashSet<string> characterTalents = new();
+
+    // Talents specifically purchased with XP.
+    private HashSet<string> purchasedTalents = new();
+
+
+    // ============================================================
+    // FEATURE TRACKING
+    // ============================================================
+
+    // Features the character already owns.
+    private HashSet<string> characterFeatures = new();
+
+    // Features specifically purchased with XP.
+    private HashSet<string> purchasedFeatures = new();
+
+
+    // ============================================================
+    // CHARACTER DATA
+    // ============================================================
+
+    private int xpPool = 1000;
+
+    private int xpSpent = 0;
+
+    private int characterMP = 0;
+
+    private int xpAdjustment = 50;
+
 
     private PowerLevelDto? selectedPowerLevel;
 
     private int allowedFeatures = 3;
 
     private string? selectedLocation;
+
     private string? selectedRace;
+
     private string? selectedBackground;
+
     private string? selectedTrade;
+
     private string? selectedMotivation;
 
+
+    // ============================================================
+    // FEATURES FROM CHARACTER CREATION
+    // ============================================================
+
     private string? feature1;
+
     private string? feature2;
+
     private string? feature3;
+
     private string? feature4;
 
+
+    // ============================================================
+    // SKILLS
+    // ============================================================
+
     private string? selectedAristocratSkill1;
+
     private string? selectedAristocratSkill2;
+
     private string? selectedScholarSkill;
+
     private string? selectedArtisanSkill;
+
     private string? selectedPleasureSkill;
 
+
+    // ============================================================
+    // XP
+    // ============================================================
+
     private int xpRemaining =>
-        Math.Max(0, xpPool - xpSpent);
+        Math.Max(
+            0,
+            xpPool - xpSpent);
+
 
     private int GetTotalMP()
     {
         return characterMP;
     }
-    // =================================================
+
+
+    // ============================================================
     // ADD XP
-    // =================================================
-
-    private int xpAdjustment = 50;
-
-    // =================================================
-    // XP ADJUSTMENT
-    // =================================================
+    // ============================================================
 
     private void AddCustomXP()
     {
@@ -166,6 +372,11 @@
 
         xpPool += xpAdjustment;
     }
+
+
+    // ============================================================
+    // REMOVE XP
+    // ============================================================
 
     private void RemoveCustomXP()
     {
@@ -180,15 +391,22 @@
             return;
 
         var amountToRemove =
-            Math.Min(xpAdjustment, maximumRemoval);
+            Math.Min(
+                xpAdjustment,
+                maximumRemoval);
 
         xpPool -= amountToRemove;
     }
 
+
+    // ============================================================
+    // SPELL TOGGLE
+    // ============================================================
+
     private async Task OnSpellToggled(
-    string? spellName,
-    int xpCost,
-    ChangeEventArgs e)
+        string? spellName,
+        int xpCost,
+        ChangeEventArgs e)
     {
         var isChecked =
             e.Value is bool value && value;
@@ -196,17 +414,19 @@
         if (string.IsNullOrWhiteSpace(spellName))
             return;
 
+
         if (isChecked)
         {
             // Already purchased.
             if (purchasedSpells.Contains(spellName))
                 return;
 
-            // Cannot purchase if insufficient XP remains.
+            // Cannot purchase if insufficient XP.
             if (xpRemaining < xpCost)
                 return;
 
-            purchasedSpells.Add(spellName);
+            purchasedSpells.Add(
+                spellName);
 
             xpSpent += xpCost;
         }
@@ -222,122 +442,338 @@
             }
         }
 
+
         RebuildLearnedSpells();
 
         await NotifyCharacterChanged();
     }
+
+
+    // ============================================================
+    // TALENT TOGGLE
+    // ============================================================
+
+    private async Task OnTalentToggled(
+        string talentName,
+        int xpCost,
+        ChangeEventArgs e)
+    {
+        var isChecked =
+            e.Value is bool value && value;
+
+        if (string.IsNullOrWhiteSpace(talentName))
+            return;
+
+
+        if (isChecked)
+        {
+            // Already owned before XP purchases.
+            if (characterTalents.Contains(talentName))
+                return;
+
+            // Already purchased.
+            if (purchasedTalents.Contains(talentName))
+                return;
+
+            // Not enough XP.
+            if (xpRemaining < xpCost)
+                return;
+
+            purchasedTalents.Add(
+                talentName);
+
+            xpSpent += xpCost;
+        }
+        else
+        {
+            // Only refund talents purchased with XP.
+            if (purchasedTalents.Remove(talentName))
+            {
+                xpSpent =
+                    Math.Max(
+                        0,
+                        xpSpent - xpCost);
+            }
+        }
+
+
+        await NotifyCharacterChanged();
+    }
+
+
+    // ============================================================
+    // FEATURE TOGGLE
+    // ============================================================
+
+    private async Task OnFeatureToggled(
+        string featureName,
+        int xpCost,
+        ChangeEventArgs e)
+    {
+        var isChecked =
+            e.Value is bool value && value;
+
+        if (string.IsNullOrWhiteSpace(featureName))
+            return;
+
+
+        if (isChecked)
+        {
+            // Already owned before XP purchases.
+            if (characterFeatures.Contains(featureName))
+                return;
+
+            // Already purchased.
+            if (purchasedFeatures.Contains(featureName))
+                return;
+
+            // Not enough XP.
+            if (xpRemaining < xpCost)
+                return;
+
+            purchasedFeatures.Add(
+                featureName);
+
+            xpSpent += xpCost;
+        }
+        else
+        {
+            // Only refund features purchased with XP.
+            if (purchasedFeatures.Remove(featureName))
+            {
+                xpSpent =
+                    Math.Max(
+                        0,
+                        xpSpent - xpCost);
+            }
+        }
+
+
+        await NotifyCharacterChanged();
+    }
+
+
+    // ============================================================
+    // UPDATE CHARACTER
+    // ============================================================
 
     private async Task NotifyCharacterChanged()
     {
         if (Character == null)
             return;
 
-        Character.XpPool = xpPool;
-        Character.XpSpent = xpSpent;
+
+        // ========================================================
+        // XP
+        // ========================================================
+
+        Character.XpPool =
+            xpPool;
+
+        Character.XpSpent =
+            xpSpent;
+
+
+        // ========================================================
+        // PURCHASED SPELLS
+        // ========================================================
 
         Character.PurchasedSpells =
             purchasedSpells
-                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Where(x =>
+                    !string.IsNullOrWhiteSpace(x))
                 .OrderBy(x => x)
                 .ToList();
+
+
+        // ========================================================
+        // LEARNED SPELLS
+        // ========================================================
 
         Character.LearnedSpells =
             learnedSpells
-                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Where(x =>
+                    !string.IsNullOrWhiteSpace(x))
                 .OrderBy(x => x)
                 .ToList();
 
-        await OnCharacterChanged.InvokeAsync(Character);
+
+        // ========================================================
+        // TALENTS
+        // ========================================================
+
+        var allTalents =
+            new HashSet<string>(
+                characterTalents);
+
+        foreach (var talent in purchasedTalents)
+        {
+            allTalents.Add(
+                talent);
+        }
+
+        Character.Talents =
+            allTalents
+                .Where(x =>
+                    !string.IsNullOrWhiteSpace(x))
+                .OrderBy(x => x)
+                .ToList();
+
+
+        // ========================================================
+        // FEATURES
+        // ========================================================
+
+        var allFeatures =
+            new HashSet<string>(
+                characterFeatures);
+
+        foreach (var feature in purchasedFeatures)
+        {
+            allFeatures.Add(
+                feature);
+        }
+
+        Character.Features =
+            allFeatures
+                .Where(x =>
+                    !string.IsNullOrWhiteSpace(x))
+                .OrderBy(x => x)
+                .ToList();
+
+
+        // ========================================================
+        // NOTIFY PARENT
+        // ========================================================
+
+        await OnCharacterChanged.InvokeAsync(
+            Character);
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+
+    // ============================================================
+    // LOAD API DATA
+    // ============================================================
+
+    protected override async Task OnAfterRenderAsync(
+        bool firstRender)
     {
         if (!firstRender)
             return;
 
         try
         {
+            locations =
+                await Http.GetFromJsonAsync<List<LocationDto>>(
+                    "api/locations")
+                ?? new List<LocationDto>();
 
-            try
-            {
-                locations =
-               await Http.GetFromJsonAsync<List<LocationDto>>(
-                   "api/locations")
-               ?? new List<LocationDto>();
 
-                backgrounds =
-                    await Http.GetFromJsonAsync<List<SimpleDto>>(
-                        "api/backgrounds")
-                    ?? new List<SimpleDto>();
+            backgrounds =
+                await Http.GetFromJsonAsync<List<SimpleDto>>(
+                    "api/backgrounds")
+                ?? new List<SimpleDto>();
 
-                trades =
-                    await Http.GetFromJsonAsync<List<SimpleDto>>(
-                        "api/trades")
-                    ?? new List<SimpleDto>();
 
-                motivations =
-                    await Http.GetFromJsonAsync<List<SimpleDto>>(
-                        "api/motivations")
-                    ?? new List<SimpleDto>();
+            trades =
+                await Http.GetFromJsonAsync<List<SimpleDto>>(
+                    "api/trades")
+                ?? new List<SimpleDto>();
 
-                features =
-                    await Http.GetFromJsonAsync<List<FeatureDto>>(
-                        "api/features")
-                    ?? new List<FeatureDto>();
 
-                weapons =
-                    await Http.GetFromJsonAsync<List<WeaponDto>>(
-                        "api/weapons")
-                    ?? new List<WeaponDto>();
+            motivations =
+                await Http.GetFromJsonAsync<List<SimpleDto>>(
+                    "api/motivations")
+                ?? new List<SimpleDto>();
 
-                armors =
-                    await Http.GetFromJsonAsync<List<ArmorDto>>(
-                        "api/armor")
-                    ?? new List<ArmorDto>();
 
-                spells =
-                    await Http.GetFromJsonAsync<List<SpellDto>>(
-                        "api/spells")
-                    ?? new List<SpellDto>();
+            features =
+                await Http.GetFromJsonAsync<List<FeatureDto>>(
+                    "api/features")
+                ?? new List<FeatureDto>();
 
-                races =
-                    await Http.GetFromJsonAsync<List<RaceDto>>(
-                        "api/races")
-                    ?? new List<RaceDto>();
-            }
-            catch
-            {
-                spells = new List<SpellDto>();
-            }
 
+            talents =
+                await Http.GetFromJsonAsync<List<TalentDto>>(
+                    "api/talents")
+                ?? new List<TalentDto>();
+
+
+            weapons =
+                await Http.GetFromJsonAsync<List<WeaponDto>>(
+                    "api/weapons")
+                ?? new List<WeaponDto>();
+
+
+            armors =
+                await Http.GetFromJsonAsync<List<ArmorDto>>(
+                    "api/armor")
+                ?? new List<ArmorDto>();
+
+
+            spells =
+                await Http.GetFromJsonAsync<List<SpellDto>>(
+                    "api/spells")
+                ?? new List<SpellDto>();
+
+
+            races =
+                await Http.GetFromJsonAsync<List<RaceDto>>(
+                    "api/races")
+                ?? new List<RaceDto>();
         }
-        catch (Exception ex)
+        catch
         {
-
+            // Keep already initialized collections.
         }
+
 
         StateHasChanged();
     }
 
+
+    // ============================================================
+    // PARAMETERS
+    // ============================================================
+
     [Parameter]
     public ClientCharacterDto? Character { get; set; }
+
+
     [Parameter]
-    public EventCallback<ClientCharacterDto> OnCharacterChanged { get; set; }
+    public EventCallback<ClientCharacterDto>
+        OnCharacterChanged
+    { get; set; }
+
 
     private bool characterLoaded = false;
+
+
+    // ============================================================
+    // CHARACTER PARAMETERS CHANGED
+    // ============================================================
 
     protected override void OnParametersSet()
     {
         if (Character == null)
             return;
 
-        LoadCharacterData(Character);
-
+        LoadCharacterData(
+            Character);
     }
+
+
+    // ============================================================
+    // LOAD CHARACTER
+    // ============================================================
 
     private void LoadCharacterData(
         ClientCharacterDto dto)
     {
+        // ========================================================
+        // XP
+        // ========================================================
+
         xpPool =
             Math.Max(
                 0,
@@ -348,6 +784,11 @@
                 0,
                 dto.XpSpent);
 
+
+        // ========================================================
+        // PURCHASED SPELLS
+        // ========================================================
+
         purchasedSpells =
             dto.PurchasedSpells != null
                 ? new HashSet<string>(
@@ -355,6 +796,11 @@
                         .Where(s =>
                             !string.IsNullOrWhiteSpace(s)))
                 : new HashSet<string>();
+
+
+        // ========================================================
+        // LEARNED SPELLS
+        // ========================================================
 
         learnedSpells =
             dto.LearnedSpells != null
@@ -364,8 +810,40 @@
                             !string.IsNullOrWhiteSpace(s)))
                 : new HashSet<string>();
 
+
+        // ========================================================
+        // EXISTING TALENTS
+        // ========================================================
+
+        characterTalents =
+            dto.Talents != null
+                ? new HashSet<string>(
+                    dto.Talents
+                        .Where(t =>
+                            !string.IsNullOrWhiteSpace(t)))
+                : new HashSet<string>();
+
+
+        // ========================================================
+        // EXISTING FEATURES
+        // ========================================================
+
+        characterFeatures =
+            dto.Features != null
+                ? new HashSet<string>(
+                    dto.Features
+                        .Where(f =>
+                            !string.IsNullOrWhiteSpace(f)))
+                : new HashSet<string>();
+
+
+        // ========================================================
+        // CHARACTER CREATION DATA
+        // ========================================================
+
         selectedRace =
             dto.Race;
+
 
         feature1 =
             dto.Features != null &&
@@ -373,11 +851,13 @@
                 ? dto.Features[0]
                 : null;
 
+
         feature2 =
             dto.Features != null &&
             dto.Features.Count > 1
                 ? dto.Features[1]
                 : null;
+
 
         feature3 =
             dto.Features != null &&
@@ -385,34 +865,57 @@
                 ? dto.Features[2]
                 : null;
 
+
         feature4 =
             dto.Features != null &&
             dto.Features.Count > 3
                 ? dto.Features[3]
                 : null;
 
-        characterMP = dto.MP;
 
-        characterLoaded = true;
+        characterMP =
+            dto.MP;
+
+
+        characterLoaded =
+            true;
+
 
         RebuildLearnedSpells();
     }
+
+
+    // ============================================================
+    // REBUILD LEARNED SPELLS
+    // ============================================================
 
     private void RebuildLearnedSpells()
     {
         learnedSpells.Clear();
 
+
+        // ========================================================
+        // PURCHASED SPELLS
+        // ========================================================
+
         foreach (var spell in purchasedSpells)
         {
             if (!string.IsNullOrWhiteSpace(spell))
             {
-                learnedSpells.Add(spell);
+                learnedSpells.Add(
+                    spell);
             }
         }
+
+
+        // ========================================================
+        // RACE SPELLS
+        // ========================================================
 
         var race =
             races.FirstOrDefault(
                 r => r.Name == selectedRace);
+
 
         if (race != null)
         {
@@ -420,38 +923,61 @@
             {
                 if (!string.IsNullOrWhiteSpace(spell))
                 {
-                    learnedSpells.Add(spell);
+                    learnedSpells.Add(
+                        spell);
                 }
             }
         }
 
-        var selectedFeatures = new[]
-        {
-        feature1,
-        feature2,
-        feature3,
-        feature4
-    };
+
+        // ========================================================
+        // FEATURE SPELLS
+        // ========================================================
+
+        var selectedFeatures =
+            new[]
+            {
+                feature1,
+                feature2,
+                feature3,
+                feature4
+            };
+
 
         foreach (var fname in selectedFeatures)
         {
             if (string.IsNullOrEmpty(fname))
                 continue;
 
+
             switch (fname)
             {
                 case "BardicPerformance":
+
                 case "Channel":
+
                 case "Counterspell":
+
                 case "EldritchBlast":
+
                 case "LayOnHands":
+
                 case "Purify":
+
                 case "Smite":
-                    learnedSpells.Add(fname);
+
+                    learnedSpells.Add(
+                        fname);
+
                     break;
             }
         }
     }
+
+
+    // ============================================================
+    // DTOs
+    // ============================================================
 
     private class LocationDto
     {
@@ -459,6 +985,7 @@
 
         public List<string>? Races { get; set; }
     }
+
 
     private class SimpleDto
     {
@@ -477,6 +1004,7 @@
         public List<string>? Equipment { get; set; }
     }
 
+
     private class WeaponDto
     {
         public string? Name { get; set; }
@@ -491,8 +1019,10 @@
 
         public string? DamageTypes { get; set; }
 
-        public List<string> Traits { get; set; } = new();
+        public List<string> Traits { get; set; } =
+            new();
     }
+
 
     private class ArmorDto
     {
@@ -500,6 +1030,7 @@
 
         public int? ArmorPoints { get; set; }
     }
+
 
     private class RaceDto
     {
@@ -526,23 +1057,24 @@
         public int CHA { get; set; }
 
         public List<string> Skills { get; set; } =
-            new List<string>();
+            new();
 
         public List<string> Talents { get; set; } =
-            new List<string>();
+            new();
 
         public List<string> Languages { get; set; } =
-            new List<string>();
+            new();
 
         public List<string> Traits { get; set; } =
-            new List<string>();
+            new();
 
         public List<string> Spells { get; set; } =
-            new List<string>();
+            new();
 
         public List<string> Features { get; set; } =
-            new List<string>();
+            new();
     }
+
 
     private class PowerLevelDto
     {
@@ -554,6 +1086,7 @@
 
         public string? Description { get; set; }
     }
+
 
     private class DiagnosticsInfo
     {
@@ -572,6 +1105,7 @@
         public string? ServerUser { get; set; }
     }
 
+
     private class SpellDto
     {
         public string? Name { get; set; }
@@ -589,6 +1123,26 @@
         public int NumTargets { get; set; }
     }
 
+
+    private class TalentDto
+    {
+        public string? Name { get; set; }
+
+        public int XpCost { get; set; }
+
+        public string? Description { get; set; }
+
+        public List<string> Skills { get; set; } =
+            new();
+
+        public List<string> Traits { get; set; } =
+            new();
+
+        public List<string> CharBonuses { get; set; } =
+            new();
+    }
+
+
     private class FeatureDto
     {
         public string? Name { get; set; }
@@ -602,15 +1156,15 @@
         public string? Description { get; set; }
 
         public List<string> CharBonuses { get; set; } =
-            new List<string>();
+            new();
 
         public Dictionary<string, int> PreReqChar { get; set; } =
-            new Dictionary<string, int>();
+            new();
 
         public List<string> Skills { get; set; } =
-            new List<string>();
+            new();
 
         public List<string> Talents { get; set; } =
-            new List<string>();
+            new();
     }
 }
