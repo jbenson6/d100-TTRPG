@@ -1071,6 +1071,13 @@
         var allTalents =
             new List<string>();
 
+        characterTalents.RemoveWhere(
+            talent => purchasedTalents.Any(
+                purchased =>
+                    string.Equals(
+                        talent,
+                        purchased,
+                        StringComparison.OrdinalIgnoreCase)));
         // Existing talents.
         foreach (var talent in characterTalents)
         {
