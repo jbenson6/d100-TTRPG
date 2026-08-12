@@ -1,6 +1,4 @@
-﻿@rendermode InteractiveAuto
-
-@inject HttpClient Http
+﻿@inject HttpClient Http
 
 <h1>Character Sheet</h1>
 
@@ -73,6 +71,10 @@
             <div class="col-md-6">
 
                 <div>
+                    <strong>Level</strong>: @GetLevel()
+                </div>
+
+                <div>
                     <strong>Wounds</strong>: @GetTotalWounds()
                 </div>
 
@@ -84,10 +86,42 @@
                     <strong>Armor Points</strong>: @GetArmorPoints()
                 </div>
 
+                <div>
+                    <strong>LoF</strong>: @GetLevelsOfFatigue()
+                </div>
+
+                <div>
+                    <strong>Damage</strong>: @GetDamage()
+                </div>
             </div>
+        </div>
+
+        <div class="row">
 
             <div class="col-md-6">
 
+                <h6 class="mt-3">Features</h6>
+
+                @if (featuresSelected.Any())
+                {
+                    <ul>
+                        @foreach (var feature in featuresSelected.OrderBy(x => x.Key))
+                        {
+                            <li>@feature.Value</li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <div class="text-muted">
+                        No features.
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
                 <h6>Skills</h6>
 
                 @if (skillCounts.Any())
@@ -105,7 +139,11 @@
                         No skills.
                     </div>
                 }
+            </div>
+        </div>
+        <div class="row">
 
+            <div class="col-md-6">
                 <h6 class="mt-3">Talents</h6>
 
                 @if (talents.Any())
@@ -123,6 +161,11 @@
                         No talents.
                     </div>
                 }
+            </div>
+        </div>
+        <div class="row">
+
+            <div class="col-md-6">
 
                 <h6 class="mt-3">Traits</h6>
 
@@ -143,7 +186,6 @@
                 }
 
             </div>
-
         </div>
 
         <div class="mt-3">
@@ -1010,6 +1052,7 @@
     private string? selectedArtisanSkill;
     private string? selectedPleasureSkill;
 
+    private Dictionary<int, string> featuresSelected = new();
     private readonly Dictionary<string, int> aristocratSkills = new()
     {
         ["Arcana"] = 23,
@@ -1061,6 +1104,9 @@
 
     private int totalFeatureWounds = 0;
     private int totalFeatureMP = 0;
+
+    private int damage = 0;
+    private int loF = 0;
 
     private Dictionary<int, string> featureWarnings = new();
 
@@ -1114,12 +1160,6 @@
     {
         if (!firstRender || lookupsLoaded)
             return;
-
-        if (!OperatingSystem.IsBrowser())
-        {
-            lookupsLoaded = true;
-            return;
-        }
 
         try
         {
@@ -1197,26 +1237,22 @@
                         0,
                         selectedPowerLevel.Points - mandatory);
             }
+
+            await LoadSavedFiles();
+            await LoadDiagnostics();
+
+            if (diagnostics != null)
+                currentSaveFolder = diagnostics.SaveFolder;
+
+            lookupsLoaded = true;
         }
-        catch (System.Net.Http.HttpRequestException)
+        catch (Exception ex)
         {
-            locations = new List<LocationDto>();
-            backgrounds = new List<SimpleDto>();
-            trades = new List<SimpleDto>();
-            motivations = new List<SimpleDto>();
-            features = new List<FeatureDto>();
-
             saveMessage =
-                "Unable to load lookups - server API not available.";
+                $"Unable to load lookups: {ex.Message}";
+
+            lookupsLoaded = true;
         }
-
-        lookupsLoaded = true;
-
-        await LoadSavedFiles();
-        await LoadDiagnostics();
-
-        if (diagnostics != null)
-            currentSaveFolder = diagnostics.SaveFolder;
 
         StateHasChanged();
     }
@@ -2100,6 +2136,13 @@
             slot,
             name);
 
+        var value = "";
+        if(featuresSelected.TryGetValue(slot, out value))
+        {
+            featuresSelected.Remove(slot);
+        }
+        featuresSelected.Add(slot, name);
+
         ReapplyAllBonusesSkillsTalentsTraits();
     }
 
@@ -2584,6 +2627,23 @@
             current + amount;
     }
 
+    private int GetLevel()
+    {
+        return Math.Max(1, xpPool / 1000);
+    }
+
+    private int GetLevelsOfFatigue()
+    {
+        return loF;
+
+    }
+
+    private int GetDamage()
+    {
+        return damage;
+
+    }
+
     // =================================================
     // TOTAL WOUNDS
     // =================================================
@@ -2837,30 +2897,39 @@
                     //will not be more than 1
                     selectedPleasureSkill = dto.MotivationSkillChoices[0];
                 }
+                featuresSelected.Clear();
 
                 feature1 =
                     dto.Features != null &&
                     dto.Features.Count > 0
                         ? dto.Features[0]
                         : null;
+                if(feature1 != null)
+                    featuresSelected.Add(1, feature1);
 
                 feature2 =
                     dto.Features != null &&
                     dto.Features.Count > 1
                         ? dto.Features[1]
                         : null;
+                if (feature2 != null)
+                    featuresSelected.Add(2, feature2);
 
                 feature3 =
                     dto.Features != null &&
                     dto.Features.Count > 2
                         ? dto.Features[2]
                         : null;
+                if (feature3 != null)
+                    featuresSelected.Add(3, feature3);
 
                 feature4 =
                     dto.Features != null &&
                     dto.Features.Count > 3
                         ? dto.Features[3]
                         : null;
+                if(feature4 != null)
+                    featuresSelected.Add(4, feature4);
 
                 selectedArmor =
                     dto.Armor;
@@ -2940,6 +3009,10 @@
 
                 saveMessage =
                     "Loaded.";
+
+                loF = dto.LoF;
+
+                damage = dto.Damage;
 
                 // Rebuild derived data from the selections while
                 // preserving the purchased spell set.
@@ -3188,6 +3261,10 @@
         public Dictionary<string, int> CurrentStats { get; set; } = new();
 
         public int AvailablePoints { get; set; }
+
+        public int Damage { get; set; }
+
+        public int LoF { get; set; }
     }
 
     private class LocationDto

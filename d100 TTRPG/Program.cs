@@ -16,9 +16,12 @@ builder.Services.AddControllers();
 // Register a named client with a sensible default BaseAddress. Override via configuration key "ServerBaseAddress".
 builder.Services.AddHttpClient("Server", client =>
 {
-    client.BaseAddress = new Uri(builder.Configuration["ServerBaseAddress"] ?? "https://localhost:5001/");
+    client.BaseAddress = new Uri("https://localhost:7001/");
 });
-builder.Services.AddScoped(sp => sp.GetRequiredService<System.Net.Http.IHttpClientFactory>().CreateClient("Server"));
+
+builder.Services.AddScoped(sp =>
+    sp.GetRequiredService<IHttpClientFactory>()
+      .CreateClient("Server"));
 
 var app = builder.Build();
 

@@ -272,6 +272,10 @@ namespace d100_TTRPG.Controllers
             public Dictionary<string, int> CurrentStats { get; set; } = new();
 
             public int AvailablePoints { get; set; }
+
+            public int Damage { get; set; }
+
+            public int LoF { get; set; }
         }
 
         // ============================================================
