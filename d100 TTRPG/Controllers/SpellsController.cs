@@ -31,7 +31,8 @@ namespace d100_TTRPG.Controllers
                             CastDifficulty = sd.CastDifficulty,
                             MagicSchool = sd.MagicSchool.ToString(),
                             Range = sd.Range,
-                            NumTargets = sd.NumTargets
+                            NumTargets = sd.NumTargets,
+                            Description = sd.Description
                         });
                     }
                 }

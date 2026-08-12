@@ -181,6 +181,7 @@
                     var isLearned =
                         learnedSpells.Contains(spellName);
 
+                    var description = GetSpellDescription(spellName);
                     <div class="mb-1">
 
                         <input type="checkbox"
@@ -191,7 +192,7 @@
                                                            s.XpCost,
                                                            e)" />
 
-<label class="ms-1">
+                        <label class="ms-1 description-hover" data-description="@description">
                             @s.Name (@s.XpCost xp)
                         </label>
 
@@ -1223,6 +1224,17 @@
             ?.Description;
     }
 
+    private string? GetSpellDescription(string spellName)
+    {
+        return spells
+            .FirstOrDefault(x =>
+                string.Equals(
+                    x.Name,
+                    spellName,
+                    StringComparison.OrdinalIgnoreCase))
+            ?.Description;
+    }
+
     protected override async Task OnAfterRenderAsync(
         bool firstRender)
     {
@@ -1765,6 +1777,8 @@
         public int Range { get; set; }
 
         public int NumTargets { get; set; }
+
+        public string? Description { get; set; }
     }
 
 

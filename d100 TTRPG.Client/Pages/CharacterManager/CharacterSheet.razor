@@ -625,7 +625,10 @@
                         {
                             var purchased = purchasedSpells.Contains(ls);
 
-                            <li>
+                            var description = GetSpellDescription(ls);
+
+                            <li class="description-hover"
+                                data-description="@description">
                                 @ls
 
                                 @if (purchased)
@@ -972,6 +975,7 @@
     private List<TalentDto> talentList = new();
     private List<TraitDto> traitList = new();
     private List<SkillDto> skillList = new();
+    private List<SpellDto> spellList = new();
 
     private PowerLevelDto? selectedPowerLevel;
 
@@ -1225,6 +1229,18 @@
                     StringComparison.OrdinalIgnoreCase))
             ?.Description;
     }
+
+    private string? GetSpellDescription(string spellName)
+    {
+        return spellList
+            .FirstOrDefault(x =>
+                string.Equals(
+                    x.Name,
+                    spellName,
+                    StringComparison.OrdinalIgnoreCase))
+            ?.Description;
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender || lookupsLoaded)
@@ -1281,6 +1297,10 @@
                  await Http.GetFromJsonAsync<List<SkillDto>>(
                     "api/skills")
                 ?? new List<SkillDto>();
+
+            spellList = await Http.GetFromJsonAsync<List<SpellDto>>(
+                    "api/spells")
+                ?? new List<SpellDto>();
 
             try
             {
@@ -3351,6 +3371,8 @@
         public int Range { get; set; }
 
         public int NumTargets { get; set; }
+
+        public string? Description { get; set; }
     }
 
     private class FeatureDto
