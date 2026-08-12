@@ -14,6 +14,7 @@ namespace d100_TTRPG.Data_Objects.Spell
         public int NumTargets { get; set; }
         public CastingTimes CastingTime { get; set; }
         public int CastDifficulty { get; set; }
+        public string Description { get; set; }
 
         public SpellDefinition() { }
     }
