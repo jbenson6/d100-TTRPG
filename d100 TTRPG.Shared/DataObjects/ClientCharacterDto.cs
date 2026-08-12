@@ -21,6 +21,7 @@
         // -------------------------------------------------
 
         public List<string> Features { get; set; } = new();
+        public List<string> PurchasedFeatures { get; set; } = new();
 
         public string? AristocratSkill1 { get; set; }
 
@@ -52,6 +53,10 @@
 
         public List<string> MotivationSkills { get; set; } = new();
         public List<string>? MotivationSkillChoices { get; set; } = new();
+
+        public Dictionary<string, int> CharacteristicImprovementSteps { get; set; } = new();
+
+        public List<string> PurchasedTalents { get; set; } = new();
 
 
         // -------------------------------------------------

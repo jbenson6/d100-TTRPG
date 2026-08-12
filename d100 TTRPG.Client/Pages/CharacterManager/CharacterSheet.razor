@@ -662,16 +662,16 @@
 
                                 @foreach (var key in new[]
                                 {
-                            "MSK",
-                            "RSK",
-                            "STR",
-                            "AGI",
-                            "CON",
-                            "INT",
-                            "PER",
-                            "WPR",
-                            "CHA"
-                        })
+                                    "MSK",
+                                    "RSK",
+                                    "STR",
+                                    "AGI",
+                                    "CON",
+                                    "INT",
+                                    "PER",
+                                    "WPR",
+                                    "CHA"
+                                })
                                 {
                                     var baseVal =
                                         baseStats.ContainsKey(key)
@@ -1069,6 +1069,14 @@
 
     private bool lookupsLoaded = false;
 
+    private Dictionary<string, int>
+        characteristicImprovementSteps =
+            new();
+
+    private HashSet<string> purchasedTalents = new();
+    private HashSet<string> purchasedFeatures = new();
+
+
     // =================================================
     // LOAD LOOKUPS
     // =================================================
@@ -1084,14 +1092,38 @@
                 : new HashSet<string>();
 
         learnedSpells =
-                    Character.LearnedSpells != null
-                        ? new HashSet<string>(Character.LearnedSpells)
-                        : new HashSet<string>();
+            Character.LearnedSpells != null
+                ? new HashSet<string>(Character.LearnedSpells)
+                : new HashSet<string>();
 
         xpPool = Character.XpPool;
         xpSpent = Character.XpSpent;
+        totalFeatureMP = Character.MP;
+
+
+        // ============================================================
+        // CURRENT CHARACTERISTICS
+        // ============================================================
+
+        currentStats = new Dictionary<string, int>
+        {
+            ["MSK"] = Character.CurrentStats["MSK"],
+            ["RSK"] = Character.CurrentStats["RSK"],
+            ["STR"] = Character.CurrentStats["STR"],
+            ["AGI"] = Character.CurrentStats["AGI"],
+            ["CON"] = Character.CurrentStats["CON"],
+            ["INT"] = Character.CurrentStats["INT"],
+            ["PER"] = Character.CurrentStats["PER"],
+            ["WPR"] = Character.CurrentStats["WPR"],
+            ["CHA"] = Character.CurrentStats["CHA"]
+        };
+
+        // ============================================================
+        // FEATURES
+        // ============================================================
 
         Dictionary<int, string> dict = new Dictionary<int, string>();
+
         for (int i = 0; i < Character.Features.Count; i++)
         {
             dict.Add(i + 1, Character.Features[i]);
@@ -1099,10 +1131,26 @@
 
         featuresSelected = dict;
 
+        // ============================================================
+        // TALENTS
+        // ============================================================
+
         talents =
-                    Character.Talents != null
-                        ? new List<string>(Character.Talents)
-                        : new List<string>();
+            Character.Talents != null
+                ? new List<string>(Character.Talents)
+                : new List<string>();
+
+        purchasedFeatures = Character.PurchasedFeatures != null 
+                                ? new HashSet<string>(Character.PurchasedFeatures)
+                                : new HashSet<string>();
+
+        characteristicImprovementSteps = Character.CharacteristicImprovementSteps != null
+                                ? new Dictionary<string, int>(Character.CharacteristicImprovementSteps)
+                                : new Dictionary<string, int>();
+
+        purchasedTalents = Character.PurchasedTalents != null
+                                ? new HashSet<string>(Character.PurchasedTalents)
+                                : new HashSet<string>();
 
     }
 
@@ -1474,7 +1522,7 @@
             $"Talents=[{string.Join(", ", talents)}], " +
             $"Traits=[{string.Join(", ", traits)}], " +
             $"XP Spent={xpSpent}, " +
-            $"XP Remaining={xpPool}, " +
+            $"XP Remaining={xpRemaining}, " +
             $"Learned Spells=[{string.Join(", ", learnedSpells)}]";
     }
 
@@ -1540,12 +1588,22 @@
                 .Select(s => s!)
                 .ToList(),
 
+            PurchasedFeatures = purchasedFeatures
+                                        .Where(s => !string.IsNullOrEmpty(s))
+                                        .Select(s => s!)
+                                        .ToList(),
+
             Talents =
                 talents
                     .Where(t => !string.IsNullOrWhiteSpace(t))
-                    .Distinct()
                     .OrderBy(t => t)
                     .ToList(),
+
+            PurchasedTalents = purchasedTalents
+                                    .Where(t => !string.IsNullOrWhiteSpace(t))
+                                    .Distinct()
+                                    .OrderBy(t => t)
+                                    .ToList(),
 
             Traits =
                 traits
@@ -1626,7 +1684,9 @@
                     .Where(x => !string.IsNullOrWhiteSpace(x))
                     .OrderBy(x => x)
                     .ToList(),
-            MP = totalFeatureMP
+            MP = totalFeatureMP,
+            CharacteristicImprovementSteps = new Dictionary<string, int>(
+                    characteristicImprovementSteps)
         };
 
         try
