@@ -185,7 +185,7 @@
         xpPool -= amountToRemove;
     }
 
-    private void OnSpellToggled(
+    private async Task OnSpellToggled(
     string? spellName,
     int xpCost,
     ChangeEventArgs e)
@@ -209,8 +209,6 @@
             purchasedSpells.Add(spellName);
 
             xpSpent += xpCost;
-
-            RebuildLearnedSpells();
         }
         else
         {
@@ -222,9 +220,34 @@
                         0,
                         xpSpent - xpCost);
             }
-
-            RebuildLearnedSpells();
         }
+
+        RebuildLearnedSpells();
+
+        await NotifyCharacterChanged();
+    }
+
+    private async Task NotifyCharacterChanged()
+    {
+        if (Character == null)
+            return;
+
+        Character.XpPool = xpPool;
+        Character.XpSpent = xpSpent;
+
+        Character.PurchasedSpells =
+            purchasedSpells
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .OrderBy(x => x)
+                .ToList();
+
+        Character.LearnedSpells =
+            learnedSpells
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .OrderBy(x => x)
+                .ToList();
+
+        await OnCharacterChanged.InvokeAsync(Character);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -237,10 +260,50 @@
 
             try
             {
+                locations =
+               await Http.GetFromJsonAsync<List<LocationDto>>(
+                   "api/locations")
+               ?? new List<LocationDto>();
+
+                backgrounds =
+                    await Http.GetFromJsonAsync<List<SimpleDto>>(
+                        "api/backgrounds")
+                    ?? new List<SimpleDto>();
+
+                trades =
+                    await Http.GetFromJsonAsync<List<SimpleDto>>(
+                        "api/trades")
+                    ?? new List<SimpleDto>();
+
+                motivations =
+                    await Http.GetFromJsonAsync<List<SimpleDto>>(
+                        "api/motivations")
+                    ?? new List<SimpleDto>();
+
+                features =
+                    await Http.GetFromJsonAsync<List<FeatureDto>>(
+                        "api/features")
+                    ?? new List<FeatureDto>();
+
+                weapons =
+                    await Http.GetFromJsonAsync<List<WeaponDto>>(
+                        "api/weapons")
+                    ?? new List<WeaponDto>();
+
+                armors =
+                    await Http.GetFromJsonAsync<List<ArmorDto>>(
+                        "api/armor")
+                    ?? new List<ArmorDto>();
+
                 spells =
                     await Http.GetFromJsonAsync<List<SpellDto>>(
                         "api/spells")
                     ?? new List<SpellDto>();
+
+                races =
+                    await Http.GetFromJsonAsync<List<RaceDto>>(
+                        "api/races")
+                    ?? new List<RaceDto>();
             }
             catch
             {
@@ -258,6 +321,8 @@
 
     [Parameter]
     public ClientCharacterDto? Character { get; set; }
+    [Parameter]
+    public EventCallback<ClientCharacterDto> OnCharacterChanged { get; set; }
 
     private bool characterLoaded = false;
 

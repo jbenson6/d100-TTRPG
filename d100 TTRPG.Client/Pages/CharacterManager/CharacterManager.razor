@@ -54,7 +54,8 @@
 
             <div class="mt-3">
 
-                <CharacterSheet OnCharacterLoaded="OnCharacterLoaded" />
+                <CharacterSheet Character="@character"
+                                OnCharacterLoaded="OnCharacterLoaded" />
 
             </div>
 
@@ -69,7 +70,8 @@
 
             <div class="mt-3">
 
-                <CharacterImprovement Character="loadedCharacter" />
+                <CharacterImprovement Character="@character"
+                                      OnCharacterChanged="OnCharacterChanged" />
 
             </div>
 
@@ -80,13 +82,25 @@
 </div>
 
 @code {
+    private ClientCharacterDto? character;
 
-    private ClientCharacterDto? loadedCharacter;
+    private List<string> purchasedSpells = new();
 
-    private void OnCharacterLoaded(
-        ClientCharacterDto character)
+    private Task OnCharacterLoaded(ClientCharacterDto dto)
     {
-        loadedCharacter = character;
+        character = dto;
+
+        purchasedSpells =
+            dto.PurchasedSpells?.ToList()
+            ?? new List<string>();
+
+        return Task.CompletedTask;
     }
 
+    private Task OnCharacterChanged(ClientCharacterDto dto)
+    {
+        character = dto;
+
+        return InvokeAsync(StateHasChanged);
+    }
 }
