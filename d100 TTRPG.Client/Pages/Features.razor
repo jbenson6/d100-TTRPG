@@ -1,6 +1,5 @@
 @page "/features"
-@rendermode InteractiveAuto
-
+@rendermode InteractiveServer
 @inject HttpClient Http
 @using System.Linq
 
@@ -8,9 +7,12 @@
 
 <h1>Features</h1>
 
-@if (features == null || !features.Any())
+
+@if (!string.IsNullOrEmpty(saveMessage))
 {
-    <p>Loading features...</p>
+    <div class="mt-2 text-muted">
+        @saveMessage
+    </div>
 }
 else
 {
@@ -43,30 +45,26 @@ else
     private int currentCount = 0;
     private List<FeatureDto> features = new();
     private bool featuresLoaded = false;
+    private string? saveMessage = "Loading features...";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender || featuresLoaded)
             return;
 
-        // Only attempt HTTP fetch when running in the browser (avoid server prerender HTTP calls)
-        if (!OperatingSystem.IsBrowser())
-        {
-            featuresLoaded = true; // mark as loaded so we don't attempt again during server render
-            return;
-        }
-
         try
         {
             // Load features from server API (client runtime)
             features = await Http.GetFromJsonAsync<List<FeatureDto>>("api/features") ?? new List<FeatureDto>();
         }
-        catch
+        catch (Exception ex)
         {
-            // If the API isn't available, fallback to empty list so the page still renders
-            features = new List<FeatureDto>();
-        }
+            saveMessage =
+                $"Unable to load features: {ex.Message}";
 
+            featuresLoaded = true;
+        }
+        saveMessage = "";
         featuresLoaded = true;
 
         // State has changed because data loaded after render

@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="d100 TTRPG.Client/d100 TTRPG.Client.csproj" />
+  <Project Path="d100 TTRPG.Shared/d100 TTRPG.Shared.csproj" Id="d4389559-445b-4ca1-b557-1cb2d8216f8f" />
   <Project Path="d100 TTRPG/d100 TTRPG.csproj" />
 </Solution>

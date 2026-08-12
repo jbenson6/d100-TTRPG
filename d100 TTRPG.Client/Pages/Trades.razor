@@ -1,19 +1,16 @@
 @page "/trades"
-@rendermode InteractiveAuto
-
+@rendermode InteractiveServer
 @inject HttpClient Http
 
 <PageTitle>Trades</PageTitle>
 
 <h1>Trades</h1>
 
-@if (!loaded)
+@if (!string.IsNullOrEmpty(saveMessage))
 {
-    <p>Loading trades...</p>
-}
-else if (trades == null || !trades.Any())
-{
-    <p>No trades available.</p>
+    <div class="mt-2 text-muted">
+        @saveMessage
+    </div>
 }
 else
 {
@@ -39,27 +36,26 @@ else
 @code {
     private List<TradeDto> trades = new();
     private bool loaded = false;
+    private string? saveMessage = "Loading trades...";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender || loaded)
             return;
 
-        if (!OperatingSystem.IsBrowser())
-        {
-            loaded = true;
-            return;
-        }
-
         try
         {
             trades = await Http.GetFromJsonAsync<List<TradeDto>>("api/trades") ?? new List<TradeDto>();
         }
-        catch
+        catch (Exception ex)
         {
-            trades = new List<TradeDto>();
+            saveMessage =
+                $"Unable to load trades: {ex.Message}";
+
+            loaded = true;
         }
 
+        saveMessage = "";
         loaded = true;
         StateHasChanged();
     }

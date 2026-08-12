@@ -15,5 +15,9 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.10" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\d100 TTRPG.Shared\d100 TTRPG.Shared.csproj" />
+  </ItemGroup>
+
 
 </Project>

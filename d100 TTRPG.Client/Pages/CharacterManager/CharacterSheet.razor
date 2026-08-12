@@ -1,5 +1,5 @@
 ﻿@inject HttpClient Http
-
+@using d100_TTRPG.Shared.Data_Objects
 <h1>Character Sheet</h1>
 
 <div class="card p-3 mb-3">
@@ -62,7 +62,7 @@
 
     </div>
 
-    <div class="card p-3 mt-3">
+    <div class="card p-3 mt-3 mb-3">
 
         <h5>Derived</h5>
 
@@ -93,12 +93,7 @@
                 <div>
                     <strong>Damage</strong>: @GetDamage()
                 </div>
-            </div>
-        </div>
 
-        <div class="row">
-
-            <div class="col-md-6">
 
                 <h6 class="mt-3">Features</h6>
 
@@ -117,11 +112,7 @@
                         No features.
                     </div>
                 }
-            </div>
-        </div>
 
-        <div class="row">
-            <div class="col-md-6">
                 <h6>Skills</h6>
 
                 @if (skillCounts.Any())
@@ -139,11 +130,7 @@
                         No skills.
                     </div>
                 }
-            </div>
-        </div>
-        <div class="row">
 
-            <div class="col-md-6">
                 <h6 class="mt-3">Talents</h6>
 
                 @if (talents.Any())
@@ -161,11 +148,7 @@
                         No talents.
                     </div>
                 }
-            </div>
-        </div>
-        <div class="row">
 
-            <div class="col-md-6">
 
                 <h6 class="mt-3">Traits</h6>
 
@@ -185,115 +168,254 @@
                     </div>
                 }
 
-            </div>
-        </div>
+                <h6>Learned Spells</h6>
 
-        <div class="mt-3">
-
-            <h6>Spells</h6>
-
-            <div class="mb-2">
-
-                <button class="btn btn-sm btn-outline-secondary me-2"
-                        @onclick="AddXP">
-                    +50 XP
-                </button>
-
-                <span class="me-3">
-                    XP Pool:
-                    <strong>@xpPool</strong>
-                </span>
-
-                <span class="me-3">
-                    XP Spent:
-                    <strong>@xpSpent</strong>
-                </span>
-
-                <span>
-                    XP Remaining:
-                    <strong>@xpRemaining</strong>
-                </span>
-
-            </div>
-
-            @if (spells != null && spells.Any())
-            {
-                <div class="row">
-
-                    <div class="col-md-6">
-
-                        <h6>Available</h6>
-
-                        @foreach (var s in spells
-                            .Where(s => s.MP <= GetTotalMP())
-                            .OrderBy(s => s.Name))
+                @if (learnedSpells.Any())
+                {
+                    <ul>
+                        @foreach (var ls in learnedSpells.OrderBy(x => x))
                         {
-                            var isLearned = learnedSpells.Contains(s.Name ?? "");
+                            var purchased = purchasedSpells.Contains(ls);
 
-                            <div class="mb-1">
+                            <li>
+                                @ls
 
-                                <input type="checkbox"
-                                       checked="@isLearned"
-                                       disabled="@(!isLearned && xpRemaining < s.XpCost)"
-                                       @onchange="e => OnSpellToggled(s.Name, s.XpCost, e)" />
-
-                                <label class="ms-1">
-                                    @s.Name (@s.XpCost xp)
-                                </label>
-
-                            </div>
-                        }
-
-                    </div>
-
-                    <div class="col-md-6">
-
-                        <h6>Learned Spells</h6>
-
-                        @if (learnedSpells.Any())
-                        {
-                            <ul>
-                                @foreach (var ls in learnedSpells.OrderBy(x => x))
+                                @if (purchased)
                                 {
-                                    var purchased = purchasedSpells.Contains(ls);
-
-                                    <li>
-                                        @ls
-
-                                        @if (purchased)
-                                        {
-                                            <span class="text-muted">
-                                                (purchased)
-                                            </span>
-                                        }
-                                        else
-                                        {
-                                            <span class="text-success">
-                                                (granted)
-                                            </span>
-                                        }
-
-                                    </li>
+                                    <span class="text-muted">
+                                        (purchased)
+                                    </span>
                                 }
-                            </ul>
+                                else
+                                {
+                                    <span class="text-success">
+                                        (granted)
+                                    </span>
+                                }
+
+                            </li>
                         }
-                        else
+                    </ul>
+                }
+                else
+                {
+                    <div class="text-muted">
+                        No learned spells.
+                    </div>
+                }
+
+
+            </div>
+
+            <div class="col-md-6">
+
+                <div class="card p-3 mb-3">
+
+                    <h5>Character Sheet</h5>
+
+                    <div class="mb-2">
+                        Points available:
+                        <strong>@availablePoints</strong>
+                    </div>
+
+                    @if (baseStats != null && baseStats.Any())
+                    {
+                        <table class="table table-sm">
+
+                            <thead>
+                                <tr>
+                                    <th>Stat</th>
+                                    <th>Value</th>
+                                    <th>Feat</th>
+                                    <th>Bonus</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                @foreach (var key in new[]
+                                {
+                            "MSK",
+                            "RSK",
+                            "STR",
+                            "AGI",
+                            "CON",
+                            "INT",
+                            "PER",
+                            "WPR",
+                            "CHA"
+                        })
+                                {
+                                    var baseVal =
+                                        baseStats.ContainsKey(key)
+                                            ? baseStats[key]
+                                            : 0;
+
+                                    var curVal =
+                                        currentStats.ContainsKey(key)
+                                            ? currentStats[key]
+                                            : baseVal;
+
+                                    featureBonuses.TryGetValue(
+                                        key,
+                                        out var fb);
+
+                                    var effective =
+                                        curVal + fb;
+
+                                    var charBonus =
+                                        effective / 10;
+
+                                    <tr>
+
+                                        <td>@key</td>
+
+                                        <td>
+                                            @effective
+
+                                            @if (fb > 0)
+                                            {
+                                                <small class="text-success">
+                                                    (+@fb)
+                                                </small>
+                                            }
+                                        </td>
+
+                                        <td>@fb</td>
+
+                                        <td>@charBonus</td>
+
+                                        <td>
+
+                                            <button class="btn btn-sm btn-secondary me-1"
+                                                    @onclick="() => DecreaseStat(key)"
+                                                    disabled="@(curVal <= baseVal + 5)">
+                                                -
+                                            </button>
+
+                                            <button class="btn btn-sm btn-secondary"
+                                                    @onclick="() => IncreaseStat(key)"
+                                                    disabled="@(availablePoints < 5 || curVal >= baseVal + 20)">
+                                                +
+                                            </button>
+
+                                        </td>
+
+                                    </tr>
+                                }
+
+                            </tbody>
+
+                        </table>
+                    }
+                    else
+                    {
+                        <p class="text-muted">
+                            Select a race to populate base statistics.
+                        </p>
+                    }
+
+                </div>
+
+
+                <div class="card p-3 mb-3">
+
+                    <h5>Equipment</h5>
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Armor
+                        </label>
+
+                        <select class="form-select"
+                                @bind="selectedArmor">
+
+                            <option value="">
+                                (Select armor)
+                            </option>
+
+                            @foreach (var a in GetAvailableArmors())
+                            {
+                                <option value="@a.Name">
+                                    @a.Name (@a.ArmorPoints)
+                                </option>
+                            }
+
+                        </select>
+
+                        <div class="form-text">
+                            Highest armor proficiency:
+                            <strong>@GetHighestArmorProficiencyName()</strong>
+                        </div>
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Main hand
+                        </label>
+
+                        <select class="form-select"
+                                @onchange="OnMainWeaponChanged">
+
+                            <option value="">
+                                (Select main weapon)
+                            </option>
+
+                            @foreach (var w in weapons.Where(w =>
+                                !(w.Hands?.Contains("Shield") ?? false) &&
+                                !(w.Hands?.Contains("TowerShield") ?? false) &&
+                                !(w.Hands?.Contains("Armor") ?? false)))
+                            {
+                                <option value="@w.Name"
+                                        selected="@(w.Name == selectedMainWeapon)">
+                                    @w.Name (@w.Hands / @w.Range)
+                                </option>
+                            }
+
+                        </select>
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Off hand
+                        </label>
+
+                        <select class="form-select"
+                                value="@selectedOffWeapon"
+                                @onchange="OnOffWeaponChanged"
+                                disabled="@IsOffhandDisabled()">
+
+                            <option value="">
+                                (Select off-hand)
+                            </option>
+
+                            @foreach (var w in weapons)
+                            {
+                                <option value="@w.Name">
+                                    @w.Name (@w.Hands)
+                                </option>
+                            }
+
+                        </select>
+
+                        @if (IsOffhandDisabled())
                         {
-                            <div class="text-muted">
-                                No learned spells.
+                            <div class="form-text">
+                                Off-hand disabled for two-handed or ranged main weapons.
                             </div>
                         }
 
                     </div>
 
+
                 </div>
-            }
-            else
-            {
-                <div class="text-muted">
-                    No spells loaded.
-                </div>
-            }
+            </div>
 
         </div>
 
@@ -726,223 +848,6 @@
 
     </div>
 
-    <div class="row mt-4">
-
-        <div class="col-md-6">
-
-            <div class="card p-3">
-
-                <h5>Character Sheet</h5>
-
-                <div class="mb-2">
-                    Points available:
-                    <strong>@availablePoints</strong>
-                </div>
-
-                @if (baseStats != null && baseStats.Any())
-                {
-                    <table class="table table-sm">
-
-                        <thead>
-                            <tr>
-                                <th>Stat</th>
-                                <th>Value</th>
-                                <th>Feat</th>
-                                <th>Bonus</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-
-                            @foreach (var key in new[]
-                            {
-                            "MSK",
-                            "RSK",
-                            "STR",
-                            "AGI",
-                            "CON",
-                            "INT",
-                            "PER",
-                            "WPR",
-                            "CHA"
-                        })
-                            {
-                                var baseVal =
-                                    baseStats.ContainsKey(key)
-                                        ? baseStats[key]
-                                        : 0;
-
-                                var curVal =
-                                    currentStats.ContainsKey(key)
-                                        ? currentStats[key]
-                                        : baseVal;
-
-                                featureBonuses.TryGetValue(
-                                    key,
-                                    out var fb);
-
-                                var effective =
-                                    curVal + fb;
-
-                                var charBonus =
-                                    effective / 10;
-
-                                <tr>
-
-                                    <td>@key</td>
-
-                                    <td>
-                                        @effective
-
-                                        @if (fb > 0)
-                                        {
-                                            <small class="text-success">
-                                                (+@fb)
-                                            </small>
-                                        }
-                                    </td>
-
-                                    <td>@fb</td>
-
-                                    <td>@charBonus</td>
-
-                                    <td>
-
-                                        <button class="btn btn-sm btn-secondary me-1"
-                                                @onclick="() => DecreaseStat(key)"
-                                                disabled="@(curVal <= baseVal + 5)">
-                                            -
-                                        </button>
-
-                                        <button class="btn btn-sm btn-secondary"
-                                                @onclick="() => IncreaseStat(key)"
-                                                disabled="@(availablePoints < 5 || curVal >= baseVal + 20)">
-                                            +
-                                        </button>
-
-                                    </td>
-
-                                </tr>
-                            }
-
-                        </tbody>
-
-                    </table>
-                }
-                else
-                {
-                    <p class="text-muted">
-                        Select a race to populate base statistics.
-                    </p>
-                }
-
-            </div>
-
-        </div>
-
-        <div class="col-md-6">
-
-            <div class="card p-3">
-
-                <h5>Equipment</h5>
-
-                <div class="mb-3">
-
-                    <label class="form-label">
-                        Armor
-                    </label>
-
-                    <select class="form-select"
-                            @bind="selectedArmor">
-
-                        <option value="">
-                            (Select armor)
-                        </option>
-
-                        @foreach (var a in GetAvailableArmors())
-                        {
-                            <option value="@a.Name">
-                                @a.Name (@a.ArmorPoints)
-                            </option>
-                        }
-
-                    </select>
-
-                    <div class="form-text">
-                        Highest armor proficiency:
-                        <strong>@GetHighestArmorProficiencyName()</strong>
-                    </div>
-
-                </div>
-
-                <div class="mb-3">
-
-                    <label class="form-label">
-                        Main hand
-                    </label>
-
-                    <select class="form-select"
-                            @onchange="OnMainWeaponChanged">
-
-                        <option value="">
-                            (Select main weapon)
-                        </option>
-
-                        @foreach (var w in weapons.Where(w =>
-                            !(w.Hands?.Contains("Shield") ?? false) &&
-                            !(w.Hands?.Contains("TowerShield") ?? false) &&
-                            !(w.Hands?.Contains("Armor") ?? false)))
-                        {
-                            <option value="@w.Name"
-                                    selected="@(w.Name == selectedMainWeapon)">
-                                @w.Name (@w.Hands / @w.Range)
-                            </option>
-                        }
-
-                    </select>
-
-                </div>
-
-                <div class="mb-3">
-
-                    <label class="form-label">
-                        Off hand
-                    </label>
-
-                    <select class="form-select"
-                            value="@selectedOffWeapon"
-                            @onchange="OnOffWeaponChanged"
-                            disabled="@IsOffhandDisabled()">
-
-                        <option value="">
-                            (Select off-hand)
-                        </option>
-
-                        @foreach (var w in weapons)
-                        {
-                            <option value="@w.Name">
-                                @w.Name (@w.Hands)
-                            </option>
-                        }
-
-                    </select>
-
-                    @if (IsOffhandDisabled())
-                    {
-                        <div class="form-text">
-                            Off-hand disabled for two-handed or ranged main weapons.
-                        </div>
-                    }
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
     <div class="mt-3">
 
         <button class="btn btn-primary"
@@ -1019,6 +924,9 @@
 </div>
 
 @code {
+
+    [Parameter]
+    public EventCallback<ClientCharacterDto> OnCharacterLoaded { get; set; }
 
     private List<LocationDto> locations = new();
     private List<string> raceOptions = new();
@@ -1675,7 +1583,8 @@
                 purchasedSpells
                     .Where(x => !string.IsNullOrWhiteSpace(x))
                     .OrderBy(x => x)
-                    .ToList()
+                    .ToList(),
+            MP = totalFeatureMP
         };
 
         try
@@ -1903,14 +1812,7 @@
         }
     }
 
-    // =================================================
-    // ADD XP
-    // =================================================
-
-    private void AddXP()
-    {
-        xpPool += 50;
-    }
+    
 
     // =================================================
     // BACKGROUND
@@ -2137,7 +2039,7 @@
             name);
 
         var value = "";
-        if(featuresSelected.TryGetValue(slot, out value))
+        if (featuresSelected.TryGetValue(slot, out value))
         {
             featuresSelected.Remove(slot);
         }
@@ -2904,7 +2806,7 @@
                     dto.Features.Count > 0
                         ? dto.Features[0]
                         : null;
-                if(feature1 != null)
+                if (feature1 != null)
                     featuresSelected.Add(1, feature1);
 
                 feature2 =
@@ -2928,7 +2830,7 @@
                     dto.Features.Count > 3
                         ? dto.Features[3]
                         : null;
-                if(feature4 != null)
+                if (feature4 != null)
                     featuresSelected.Add(4, feature4);
 
                 selectedArmor =
@@ -3018,6 +2920,7 @@
                 // preserving the purchased spell set.
                 ReapplyAllBonusesSkillsTalentsTraits();
             }
+            await OnCharacterLoaded.InvokeAsync(dto);
         }
         catch (Exception ex)
         {
@@ -3171,101 +3074,6 @@
     // =================================================
     // DTOs
     // =================================================
-
-    private class ClientCharacterDto
-    {
-        public string? Name { get; set; }
-
-        public string? PowerLevel { get; set; }
-
-        public string? Location { get; set; }
-
-        public string? Race { get; set; }
-
-        public string? Background { get; set; }
-
-        public string? Trade { get; set; }
-
-        public string? Motivation { get; set; }
-
-        // -------------------------------------------------
-        // Character selections
-        // -------------------------------------------------
-
-        public List<string> Features { get; set; } = new();
-
-        public string? AristocratSkill1 { get; set; }
-
-        public string? AristocratSkill2 { get; set; }
-
-        public string? ScholarSkill { get; set; }
-
-        public string? ArtisanSkill { get; set; }
-
-        public string? PleasureSkill { get; set; }
-
-        // -------------------------------------------------
-        // Derived character data
-        // -------------------------------------------------
-
-        public List<string> Talents { get; set; } = new();
-
-        public List<string> Traits { get; set; } = new();
-
-        public List<string> Skills { get; set; } = new();
-
-        public List<string> BackgroundSkills { get; set; } = new();
-        public List<string>? BackgroundSkillChoices { get; set; } = new();
-
-
-        public List<string> TradeSkills { get; set; } = new();
-        public List<string>? TradeSkillChoices { get; set; } = new();
-
-
-        public List<string> MotivationSkills { get; set; } = new();
-        public List<string>? MotivationSkillChoices { get; set; } = new();
-
-
-        // -------------------------------------------------
-        // Spells
-        // -------------------------------------------------
-
-        public List<string> LearnedSpells { get; set; } = new();
-
-        public List<string> PurchasedSpells { get; set; } = new();
-
-        // -------------------------------------------------
-        // XP
-        // -------------------------------------------------
-
-        public int XpPool { get; set; }
-
-        public int XpSpent { get; set; }
-
-        public int XpRemaining { get; set; }
-
-        // -------------------------------------------------
-        // Equipment
-        // -------------------------------------------------
-
-        public string? Armor { get; set; }
-
-        public string? MainWeapon { get; set; }
-
-        public string? OffWeapon { get; set; }
-
-        // -------------------------------------------------
-        // Characteristics
-        // -------------------------------------------------
-
-        public Dictionary<string, int> CurrentStats { get; set; } = new();
-
-        public int AvailablePoints { get; set; }
-
-        public int Damage { get; set; }
-
-        public int LoF { get; set; }
-    }
 
     private class LocationDto
     {

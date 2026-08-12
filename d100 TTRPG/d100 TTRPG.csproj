@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\d100 TTRPG.Client\d100 TTRPG.Client.csproj" />
+    <ProjectReference Include="..\d100 TTRPG.Shared\d100 TTRPG.Shared.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.10" />
   </ItemGroup>
 

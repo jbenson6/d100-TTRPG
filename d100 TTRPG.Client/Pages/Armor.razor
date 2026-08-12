@@ -1,19 +1,16 @@
 @page "/armor"
-@rendermode InteractiveAuto
-
+@rendermode InteractiveServer
 @inject HttpClient Http
 
 <PageTitle>Armor</PageTitle>
 
 <h1>Armor</h1>
 
-@if (!loaded)
+@if (!string.IsNullOrEmpty(saveMessage))
 {
-    <p>Loading armor...</p>
-}
-else if (items == null || !items.Any())
-{
-    <p>No armor definitions available.</p>
+    <div class="mt-2 text-muted">
+        @saveMessage
+    </div>
 }
 else
 {
@@ -39,6 +36,7 @@ else
 @code {
     private List<ArmorDto> items = new();
     private bool loaded = false;
+    private string? saveMessage = "Loading armor...";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -55,11 +53,14 @@ else
         {
             items = await Http.GetFromJsonAsync<List<ArmorDto>>("api/armor") ?? new List<ArmorDto>();
         }
-        catch
+        catch (Exception ex)
         {
-            items = new List<ArmorDto>();
-        }
+            saveMessage =
+                $"Unable to load armor: {ex.Message}";
 
+            loaded = true;
+        }
+        saveMessage = "";
         loaded = true;
         StateHasChanged();
     }

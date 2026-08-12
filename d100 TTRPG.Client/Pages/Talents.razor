@@ -1,19 +1,16 @@
 @page "/talents"
-@rendermode InteractiveAuto
-
+@rendermode InteractiveServer
 @inject HttpClient Http
 
 <PageTitle>Talents</PageTitle>
 
 <h1>Talents</h1>
 
-@if (!loaded)
+@if (!string.IsNullOrEmpty(saveMessage))
 {
-    <p>Loading talents...</p>
-}
-else if (items == null || !items.Any())
-{
-    <p>No talents available.</p>
+    <div class="mt-2 text-muted">
+        @saveMessage
+    </div>
 }
 else
 {
@@ -45,27 +42,26 @@ else
 @code {
     private List<TalentDto> items = new();
     private bool loaded = false;
+    private string? saveMessage = "Loading talents...";
+
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender || loaded)
             return;
 
-        if (!OperatingSystem.IsBrowser())
-        {
-            loaded = true;
-            return;
-        }
-
         try
         {
             items = await Http.GetFromJsonAsync<List<TalentDto>>("api/talents") ?? new List<TalentDto>();
         }
-        catch
+        catch (Exception ex)
         {
-            items = new List<TalentDto>();
-        }
+            saveMessage =
+                $"Unable to load talents: {ex.Message}";
 
+            loaded = true;
+        }
+        saveMessage = "";
         loaded = true;
         StateHasChanged();
     }

@@ -1,7 +1,7 @@
 ﻿using d100_TTRPG.Enums;
 
 
-namespace d100_TTRPG.Data_Objects
+namespace d100_TTRPG.Data_Objects.Character
 {
     public class Character
     {

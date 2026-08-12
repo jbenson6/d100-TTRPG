@@ -1,19 +1,16 @@
 @page "/races"
-@rendermode InteractiveAuto
-
+@rendermode InteractiveServer
 @inject HttpClient Http
 
 <PageTitle>Races</PageTitle>
 
 <h1>Races</h1>
 
-@if (!loaded)
+@if (!string.IsNullOrEmpty(saveMessage))
 {
-    <p>Loading races...</p>
-}
-else if (items == null || !items.Any())
-{
-    <p>No races available.</p>
+    <div class="mt-2 text-muted">
+        @saveMessage
+    </div>
 }
 else
 {
@@ -57,27 +54,25 @@ else
 @code {
     private List<RaceDto> items = new();
     private bool loaded = false;
+    private string? saveMessage = "Loading races...";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender || loaded)
             return;
 
-        if (!OperatingSystem.IsBrowser())
-        {
-            loaded = true;
-            return;
-        }
-
         try
         {
             items = await Http.GetFromJsonAsync<List<RaceDto>>("api/races") ?? new List<RaceDto>();
         }
-        catch
+        catch (Exception ex)
         {
-            items = new List<RaceDto>();
-        }
+            saveMessage =
+                $"Unable to load races: {ex.Message}";
 
+            loaded = true;
+        }
+        saveMessage = "";
         loaded = true;
         StateHasChanged();
     }

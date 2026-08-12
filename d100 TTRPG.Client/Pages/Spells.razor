@@ -1,19 +1,16 @@
 @page "/spells"
-@rendermode InteractiveAuto
-
+@rendermode InteractiveServer
 @inject HttpClient Http
 
 <PageTitle>Spells</PageTitle>
 
 <h1>Spells</h1>
 
-@if (!loaded)
+@if (!string.IsNullOrEmpty(saveMessage))
 {
-    <p>Loading spells...</p>
-}
-else if (spells == null || !spells.Any())
-{
-    <p>No spells available.</p>
+    <div class="mt-2 text-muted">
+        @saveMessage
+    </div>
 }
 else
 {
@@ -49,27 +46,25 @@ else
 @code {
     private List<SpellDto> spells = new();
     private bool loaded = false;
+    private string? saveMessage = "Loading spells...";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender || loaded)
             return;
 
-        if (!OperatingSystem.IsBrowser())
-        {
-            loaded = true;
-            return;
-        }
-
         try
         {
             spells = await Http.GetFromJsonAsync<List<SpellDto>>("api/spells") ?? new List<SpellDto>();
         }
-        catch
+        catch (Exception ex)
         {
-            spells = new List<SpellDto>();
-        }
+            saveMessage =
+                $"Unable to load spells: {ex.Message}";
 
+            loaded = true;
+        }
+        saveMessage = "";
         loaded = true;
         StateHasChanged();
     }

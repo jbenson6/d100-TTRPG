@@ -1,3 +1,4 @@
+using d100_TTRPG.Shared.Data_Objects;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 
@@ -192,7 +193,7 @@ namespace d100_TTRPG.Controllers
                 var json = System.IO.File.ReadAllText(path);
 
                 var character =
-                    JsonSerializer.Deserialize<CharacterDto>(
+                    JsonSerializer.Deserialize<ClientCharacterDto>(
                         json,
                         new JsonSerializerOptions
                         {
@@ -218,72 +219,11 @@ namespace d100_TTRPG.Controllers
         }
 
         // ============================================================
-        // CHARACTER DTO
-        // ============================================================
-
-        public class CharacterDto
-        {
-            public string? Name { get; set; }
-            public string? PowerLevel { get; set; }
-            public string? Location { get; set; }
-            public string? Race { get; set; }
-            public string? Background { get; set; }
-            public string? Trade { get; set; }
-            public string? Motivation { get; set; }
-
-            // Character features
-            public List<string> Features { get; set; } = new();
-
-            // Talents selected by the player
-            public List<string> Talents { get; set; } = new();
-
-            // Traits selected/generated for the character
-            public List<string> Traits { get; set; } = new();
-
-            // ALL skills actually belonging to the character.
-            // These are saved rather than reconstructed from selections.
-            public List<string> Skills { get; set; } = new();
-
-            // Bonus skills granted by the three character selections.
-            public List<string> BackgroundSkills { get; set; } = new();
-            public List<string>? BackgroundSkillChoices { get; set; } = new();
-            public List<string> TradeSkills { get; set; } = new();
-            public List<string>? TradeSkillChoices { get; set; } = new();
-
-            public List<string> MotivationSkills { get; set; } = new();
-            public List<string>? MotivationSkillChoices { get; set; } = new();
-
-            // Spells actually learned by the character.
-            public List<string> LearnedSpells { get; set; } = new();
-
-            //Spells Purchased by the character
-            public List<string> PurchasedSpells { get; set; } = new();
-
-            // XP state
-            public int XPSpent { get; set; }
-            public int XPPool { get; set; }
-
-            // Equipment
-            public string? Armor { get; set; }
-            public string? MainWeapon { get; set; }
-            public string? OffWeapon { get; set; }
-
-            // Characteristics
-            public Dictionary<string, int> CurrentStats { get; set; } = new();
-
-            public int AvailablePoints { get; set; }
-
-            public int Damage { get; set; }
-
-            public int LoF { get; set; }
-        }
-
-        // ============================================================
         // SAVE
         // ============================================================
 
         [HttpPost]
-        public IActionResult Save([FromBody] CharacterDto dto)
+        public IActionResult Save([FromBody] ClientCharacterDto dto)
         {
             if (dto == null ||
                 string.IsNullOrWhiteSpace(dto.Name))

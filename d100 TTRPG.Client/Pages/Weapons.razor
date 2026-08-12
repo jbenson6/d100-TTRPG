@@ -1,19 +1,16 @@
 @page "/weapons"
-@rendermode InteractiveAuto
-
+@rendermode InteractiveServer
 @inject HttpClient Http
 
 <PageTitle>Weapons</PageTitle>
 
 <h1>Weapons</h1>
 
-@if (!loaded)
+@if (!string.IsNullOrEmpty(saveMessage))
 {
-    <p>Loading weapons...</p>
-}
-else if (items == null || !items.Any())
-{
-    <p>No weapons available.</p>
+    <div class="mt-2 text-muted">
+        @saveMessage
+    </div>
 }
 else
 {
@@ -39,7 +36,7 @@ else
                     <td>@w.Damage</td>
                     <td>@w.Penetration</td>
                     <td>@w.DamageTypes</td>
-                    <td>@w.Traits</td>
+                    <td>@string.Join(", ", w.Traits)</td>
                 </tr>
             }
         </tbody>
@@ -49,25 +46,26 @@ else
 @code {
     private List<WeaponDto> items = new();
     private bool loaded = false;
+    private string? saveMessage = "Loading weapons...";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender || loaded)
             return;
 
-        if (!OperatingSystem.IsBrowser())
-        {
-            loaded = true;
-            return;
-        }
-
         try
         {
-            items = await Http.GetFromJsonAsync<List<WeaponDto>>("api/weapons") ?? new List<WeaponDto>();
+            items =
+                await Http.GetFromJsonAsync<List<WeaponDto>>(
+                    "api/weapons")
+                ?? new List<WeaponDto>();
+
+            saveMessage = "";
         }
-        catch
+        catch (Exception ex)
         {
-            items = new List<WeaponDto>();
+            saveMessage =
+                $"Unable to load weapons: {ex.Message}";
         }
 
         loaded = true;
@@ -77,11 +75,17 @@ else
     private class WeaponDto
     {
         public string? Name { get; set; }
+
         public string? Hands { get; set; }
+
         public string? Range { get; set; }
+
         public string? Damage { get; set; }
+
         public int Penetration { get; set; }
+
         public string? DamageTypes { get; set; }
-        public string? Traits { get; set; }
+
+        public List<string> Traits { get; set; } = new();
     }
 }

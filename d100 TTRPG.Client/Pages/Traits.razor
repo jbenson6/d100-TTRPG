@@ -1,19 +1,16 @@
 @page "/traits"
-@rendermode InteractiveAuto
-
+@rendermode InteractiveServer
 @inject HttpClient Http
 
 <PageTitle>Traits</PageTitle>
 
 <h1>Traits</h1>
 
-@if (!loaded)
+@if (!string.IsNullOrEmpty(saveMessage))
 {
-    <p>Loading traits...</p>
-}
-else if (traits == null || !traits.Any())
-{
-    <p>No traits available.</p>
+    <div class="mt-2 text-muted">
+        @saveMessage
+    </div>
 }
 else
 {
@@ -41,27 +38,25 @@ else
 @code {
     private List<TraitDto> traits = new();
     private bool loaded = false;
+    private string? saveMessage = "Loading traits...";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender || loaded)
             return;
 
-        if (!OperatingSystem.IsBrowser())
-        {
-            loaded = true;
-            return;
-        }
-
         try
         {
             traits = await Http.GetFromJsonAsync<List<TraitDto>>("api/traits") ?? new List<TraitDto>();
         }
-        catch
+        catch (Exception ex)
         {
-            traits = new List<TraitDto>();
+            saveMessage =
+                $"Unable to load traits: {ex.Message}";
+            loaded = true;
         }
 
+        saveMessage = "";
         loaded = true;
         StateHasChanged();
     }

@@ -1,19 +1,16 @@
 @page "/backgrounds"
-@rendermode InteractiveAuto
-
+@rendermode InteractiveServer
 @inject HttpClient Http
 
 <PageTitle>Backgrounds</PageTitle>
 
 <h1>Backgrounds</h1>
 
-@if (!loaded)
+@if (!string.IsNullOrEmpty(saveMessage))
 {
-    <p>Loading backgrounds...</p>
-}
-else if (backgrounds == null || !backgrounds.Any())
-{
-    <p>No backgrounds available.</p>
+    <div class="mt-2 text-muted">
+        @saveMessage
+    </div>
 }
 else
 {
@@ -41,27 +38,25 @@ else
 @code {
     private List<BackgroundDto> backgrounds = new();
     private bool loaded = false;
+    private string? saveMessage = "Loading backgrounds...";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender || loaded)
             return;
 
-        if (!OperatingSystem.IsBrowser())
-        {
-            loaded = true;
-            return;
-        }
-
         try
         {
             backgrounds = await Http.GetFromJsonAsync<List<BackgroundDto>>("api/backgrounds") ?? new List<BackgroundDto>();
         }
-        catch
+        catch (Exception ex)
         {
-            backgrounds = new List<BackgroundDto>();
-        }
+            saveMessage =
+                $"Unable to load backgrounds: {ex.Message}";
 
+            loaded = true;
+        }
+        saveMessage = "";
         loaded = true;
         StateHasChanged();
     }
