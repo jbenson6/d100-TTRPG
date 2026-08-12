@@ -251,6 +251,8 @@
                             : (!magicProficiencyMaxed &&
                                xpRemaining >= xpCost);
 
+                    var description = GetTalentDescription(talentName);
+
                     <div class="mb-1">
 
                         @if (isMagicProficiency)
@@ -270,7 +272,8 @@
                                                                    e)" />
                         }
 
-                        <label class="ms-1">
+                        <label class="ms-1 description-hover"
+                               data-description="@description">
 
                             @talentName
                             (@xpCost xp)
@@ -324,20 +327,21 @@
 
                     const int featureXpCost = 1000;
 
+                    var description = GetFeatureDescription(featureName);
+
                     <div class="mb-1">
 
                         <input type="checkbox"
                                checked="@isChecked"
                                disabled="@(!isChecked && xpRemaining < featureXpCost)"
                                @onchange="e => OnFeatureToggled(
-                                                           featureName,
-                                                           featureXpCost,
-                                                           e)" />
-
-<label class="ms-1">
-                            @featureName (@featureXpCost xp)
-                        </label>
-
+                                                                                   featureName,
+                                                                                   featureXpCost,
+                                                                                   e)" />
+                            <label class="ms-1 description-hover"
+                                data-description="@description">
+                                @featureName (@featureXpCost xp)
+                            </label>
                     </div>
                 }
             }
@@ -534,7 +538,8 @@
 
     private string? selectedPleasureSkill;
 
-
+    private List<TraitDto> traitList = new();
+    private List<SkillDto> skillList = new();
     // ============================================================
     // XP
     // ============================================================
@@ -1171,6 +1176,52 @@
     // ============================================================
     // LOAD API DATA
     // ============================================================
+    private string? GetFeatureDescription(string featureName)
+    {
+        return features
+            .FirstOrDefault(x =>
+                string.Equals(
+                    x.Name,
+                    featureName,
+                    StringComparison.OrdinalIgnoreCase))
+            ?.Description;
+    }
+
+
+    private string? GetTalentDescription(string talentName)
+    {
+        return talents
+            .FirstOrDefault(x =>
+                string.Equals(
+                    x.Name,
+                    talentName,
+                    StringComparison.OrdinalIgnoreCase))
+            ?.Description;
+    }
+
+
+    private string? GetTraitDescription(string traitName)
+    {
+        return traitList
+            .FirstOrDefault(x =>
+                string.Equals(
+                    x.Name,
+                    traitName,
+                    StringComparison.OrdinalIgnoreCase))
+            ?.Description;
+    }
+
+
+    private string? GetSkillDescription(string skillName)
+    {
+        return skillList
+            .FirstOrDefault(x =>
+                string.Equals(
+                    x.Name,
+                    skillName,
+                    StringComparison.OrdinalIgnoreCase))
+            ?.Description;
+    }
 
     protected override async Task OnAfterRenderAsync(
         bool firstRender)
@@ -1238,6 +1289,16 @@
                 await Http.GetFromJsonAsync<List<RaceDto>>(
                     "api/races")
                 ?? new List<RaceDto>();
+
+            traitList =
+                 await Http.GetFromJsonAsync<List<TraitDto>>(
+                    "api/traits")
+                ?? new List<TraitDto>();
+
+            skillList =
+                 await Http.GetFromJsonAsync<List<SkillDto>>(
+                    "api/skills")
+                ?? new List<SkillDto>();
         }
         catch
         {
@@ -1749,5 +1810,21 @@
 
         public List<string> Talents { get; set; } =
             new();
+    }
+
+    private class TraitDto
+    {
+        public string Name { get; set; }
+
+        public string Type { get; set; }
+
+        public string? Description { get; set; }
+    }
+
+    private class SkillDto
+    {
+        public string Name { get; set; }
+
+        public string? Description { get; set; }
     }
 }

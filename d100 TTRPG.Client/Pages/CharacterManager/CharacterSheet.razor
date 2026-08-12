@@ -528,7 +528,12 @@
                     <ul>
                         @foreach (var feature in featuresSelected.OrderBy(x => x.Key))
                         {
-                            <li>@feature.Value</li>
+                            var description = GetFeatureDescription(feature.Value);
+
+                            <li class="description-hover"
+                                data-description="@description">
+                                @feature.Value
+                            </li>
                         }
                     </ul>
                 }
@@ -539,6 +544,7 @@
                     </div>
                 }
 
+
                 <h6>Skills</h6>
 
                 @if (skillCounts.Any())
@@ -546,7 +552,12 @@
                     <ul>
                         @foreach (var kv in skillCounts.OrderBy(x => x.Key))
                         {
-                            <li>@kv.Key - @GetSkillRank(kv.Value)</li>
+                            var description = GetSkillDescription(kv.Key);
+
+                            <li class="description-hover"
+                                data-description="@description">
+                                @kv.Key - @GetSkillRank(kv.Value)
+                            </li>
                         }
                     </ul>
                 }
@@ -557,6 +568,7 @@
                     </div>
                 }
 
+
                 <h6 class="mt-3">Talents</h6>
 
                 @if (talents.Any())
@@ -564,7 +576,12 @@
                     <ul>
                         @foreach (var talent in talents.OrderBy(x => x))
                         {
-                            <li>@talent</li>
+                            var description = GetTalentDescription(talent);
+
+                            <li class="description-hover"
+                                data-description="@description">
+                                @talent
+                            </li>
                         }
                     </ul>
                 }
@@ -583,7 +600,12 @@
                     <ul>
                         @foreach (var trait in traits.OrderBy(x => x))
                         {
-                            <li>@trait</li>
+                            var description = GetTraitDescription(trait);
+
+                            <li class="description-hover"
+                                data-description="@description">
+                                @trait
+                            </li>
                         }
                     </ul>
                 }
@@ -947,6 +969,9 @@
     private List<ArmorDto> armors = new();
     private List<RaceDto> races = new();
     private List<PowerLevelDto> powerLevels = new();
+    private List<TalentDto> talentList = new();
+    private List<TraitDto> traitList = new();
+    private List<SkillDto> skillList = new();
 
     private PowerLevelDto? selectedPowerLevel;
 
@@ -1154,6 +1179,52 @@
 
     }
 
+    private string? GetFeatureDescription(string featureName)
+    {
+        return features
+            .FirstOrDefault(x =>
+                string.Equals(
+                    x.Name,
+                    featureName,
+                    StringComparison.OrdinalIgnoreCase))
+            ?.Description;
+    }
+
+
+    private string? GetTalentDescription(string talentName)
+    {
+        return talentList
+            .FirstOrDefault(x =>
+                string.Equals(
+                    x.Name,
+                    talentName,
+                    StringComparison.OrdinalIgnoreCase))
+            ?.Description;
+    }
+
+
+    private string? GetTraitDescription(string traitName)
+    {
+        return traitList
+            .FirstOrDefault(x =>
+                string.Equals(
+                    x.Name,
+                    traitName,
+                    StringComparison.OrdinalIgnoreCase))
+            ?.Description;
+    }
+
+
+    private string? GetSkillDescription(string skillName)
+    {
+        return skillList
+            .FirstOrDefault(x =>
+                string.Equals(
+                    x.Name,
+                    skillName,
+                    StringComparison.OrdinalIgnoreCase))
+            ?.Description;
+    }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender || lookupsLoaded)
@@ -1195,6 +1266,21 @@
                 await Http.GetFromJsonAsync<List<ArmorDto>>(
                     "api/armor")
                 ?? new List<ArmorDto>();
+
+            talentList =
+                 await Http.GetFromJsonAsync<List<TalentDto>>(
+                    "api/talents")
+                ?? new List<TalentDto>();
+
+            traitList =
+                 await Http.GetFromJsonAsync<List<TraitDto>>(
+                    "api/traits")
+                ?? new List<TraitDto>();
+
+            skillList =
+                 await Http.GetFromJsonAsync<List<SkillDto>>(
+                    "api/skills")
+                ?? new List<SkillDto>();
 
             try
             {
@@ -1868,7 +1954,7 @@
         }
     }
 
-    
+
 
     // =================================================
     // BACKGROUND
@@ -2946,7 +3032,7 @@
                                 .Where(s =>
                                     !string.IsNullOrWhiteSpace(s)))
                         : new HashSet<string>();
-                    
+
                 // -------------------------------------------------
                 // RESTORE LEARNED SPELLS
                 // -------------------------------------------------
@@ -3290,6 +3376,33 @@
 
         public List<string> Talents { get; set; } =
             new List<string>();
+    }
+
+    private class TalentDto
+    {
+        public string? Name { get; set; }
+
+        public int Tier { get; set; }
+
+        public bool Combat { get; set; }
+
+        public string? Description { get; set; }
+    }
+
+    private class TraitDto
+    {
+        public string Name { get; set; }
+
+        public string Type { get; set; }
+
+        public string? Description { get; set; }
+    }
+
+    private class SkillDto
+    {
+        public string Name { get; set; }
+
+        public string? Description { get; set; }
     }
 
 }
