@@ -1464,11 +1464,6 @@
                             !string.IsNullOrWhiteSpace(f)))
                 : new HashSet<string>();
 
-        initialFeatures =
-            dto.Features
-                .Where(f => !purchasedFeatures.Contains(f))
-                .ToHashSet();
-
 
         // ========================================================
         // CHARACTERISTIC IMPROVEMENTS
@@ -1517,7 +1512,7 @@
                 : null;
 
         featureBonuses.Clear();
-        foreach (var fname in initialFeatures)
+        foreach (var fname in characterFeatures)
         {
             var f =
                 features.FirstOrDefault(

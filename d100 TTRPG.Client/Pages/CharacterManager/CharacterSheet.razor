@@ -1093,6 +1093,9 @@
     [Parameter]
     public EventCallback<ClientCharacterDto> OnCharacterChanged { get; set; }
 
+    [Parameter]
+    public EventCallback<ClientCharacterDto> OnCharacterChangedSheet { get; set; }
+
 
     [Parameter]
     public List<string> PurchasedSpells { get; set; } = new();
@@ -1519,7 +1522,7 @@
     // LOCATION
     // =================================================
 
-    private Task OnLocationChanged(ChangeEventArgs e)
+    private async void OnLocationChanged(ChangeEventArgs e)
     {
         selectedLocation = e.Value?.ToString();
 
@@ -1532,14 +1535,14 @@
 
         selectedRace = null;
 
-        return Task.CompletedTask;
+        await NotifyCharacterChanged();
     }
 
     // =================================================
     // RACE
     // =================================================
 
-    private void OnRaceChanged(ChangeEventArgs e)
+    private async void OnRaceChanged(ChangeEventArgs e)
     {
         selectedRace = e.Value?.ToString();
 
@@ -1593,13 +1596,15 @@
         }
 
         ReapplyAllBonusesSkillsTalentsTraits();
+
+        await NotifyCharacterChanged();
     }
 
     // =================================================
     // MAIN WEAPON
     // =================================================
 
-    private void OnMainWeaponChanged(ChangeEventArgs e)
+    private async void OnMainWeaponChanged(ChangeEventArgs e)
     {
         selectedMainWeapon =
             e.Value?.ToString();
@@ -1633,13 +1638,15 @@
         equippedWeapons = GetEquippedWeapons();
 
         ReapplyAllBonusesSkillsTalentsTraits();
+
+        await NotifyCharacterChanged();
     }
 
     // =================================================
     // OFF-HAND WEAPON
     // =================================================
 
-    private void OnOffWeaponChanged(ChangeEventArgs e)
+    private async void OnOffWeaponChanged(ChangeEventArgs e)
     {
         selectedOffWeapon =
             e.Value?.ToString();
@@ -1647,13 +1654,16 @@
         equippedWeapons = GetEquippedWeapons();
 
         ReapplyAllBonusesSkillsTalentsTraits();
+
+        await NotifyCharacterChanged();
+
     }
 
     // =================================================
     // POWER LEVEL
     // =================================================
 
-    private void OnPowerLevelChanged(ChangeEventArgs e)
+    private async void OnPowerLevelChanged(ChangeEventArgs e)
     {
         var name =
             e.Value?.ToString();
@@ -1676,6 +1686,8 @@
         }
 
         ReapplyAllBonusesSkillsTalentsTraits();
+
+        await NotifyCharacterChanged();
     }
 
     // =================================================
@@ -1713,7 +1725,7 @@
     // STAT INCREASE
     // =================================================
 
-    private void IncreaseStat(string key)
+    private async void IncreaseStat(string key)
     {
         if (availablePoints < 5)
             return;
@@ -1737,13 +1749,15 @@
         availablePoints -= 5;
 
         ReapplyAllBonusesSkillsTalentsTraits();
+
+        await NotifyCharacterChanged();
     }
 
     // =================================================
     // STAT DECREASE
     // =================================================
 
-    private void DecreaseStat(string key)
+    private async void DecreaseStat(string key)
     {
         if (!baseStats.ContainsKey(key))
             return;
@@ -1768,6 +1782,8 @@
         availablePoints += 5;
 
         ReapplyAllBonusesSkillsTalentsTraits();
+
+        await NotifyCharacterChanged();
     }
 
     // =================================================
@@ -2157,7 +2173,7 @@
     // BACKGROUND
     // =================================================
 
-    private void OnBackgroundSelected(ChangeEventArgs e)
+    private async void OnBackgroundSelected(ChangeEventArgs e)
     {
         var name =
             e.Value?.ToString();
@@ -2174,13 +2190,15 @@
         }
 
         ReapplyAllBonusesSkillsTalentsTraits();
+
+        await NotifyCharacterChanged();
     }
 
     // =================================================
     // TRADE
     // =================================================
 
-    private void OnTradeSelected(ChangeEventArgs e)
+    private async void OnTradeSelected(ChangeEventArgs e)
     {
         var name =
             e.Value?.ToString();
@@ -2201,13 +2219,15 @@
         }
 
         ReapplyAllBonusesSkillsTalentsTraits();
+
+        await NotifyCharacterChanged();
     }
 
     // =================================================
     // MOTIVATION
     // =================================================
 
-    private void OnMotivationSelected(ChangeEventArgs e)
+    private async void OnMotivationSelected(ChangeEventArgs e)
     {
         var name =
             e.Value?.ToString();
@@ -2223,6 +2243,8 @@
         }
 
         ReapplyAllBonusesSkillsTalentsTraits();
+
+        await NotifyCharacterChanged();
     }
 
     // =================================================
@@ -2301,7 +2323,7 @@
     // FEATURE SELECTED
     // =================================================
 
-    private void OnFeatureSelected(
+    private async void OnFeatureSelected(
         int slot,
         ChangeEventArgs e)
     {
@@ -2385,6 +2407,9 @@
         featuresSelected.Add(slot, name);
 
         ReapplyAllBonusesSkillsTalentsTraits();
+
+        await NotifyCharacterChanged();
+
     }
 
     // =================================================
@@ -3267,6 +3292,98 @@
                 ReapplyAllBonusesSkillsTalentsTraits();
             }
             await OnCharacterLoaded.InvokeAsync(dto);
+        }
+        catch (Exception ex)
+        {
+            saveMessage =
+                "Load error: " + ex.Message;
+        }
+    }
+
+    private async Task NotifyCharacterChanged()
+    {
+        if (string.IsNullOrEmpty(selectedSavedFile))
+            return;
+
+        try
+        {
+            if (Character != null)
+            {
+                Character.Name = characterName;
+
+                Character.PowerLevel = selectedPowerLevel?.Name;
+
+                Character.Location = selectedLocation;
+
+                Character.Race = selectedRace;
+
+                Character.Background = selectedBackground;
+
+                Character.Trade = selectedTrade;
+
+                Character.Motivation = selectedMotivation;
+
+                Character.AristocratSkill1 = selectedAristocratSkill1;
+
+                Character.AristocratSkill2 = selectedAristocratSkill2;
+
+                Character.ScholarSkill = selectedScholarSkill;
+
+                Character.ArtisanSkill = selectedArtisanSkill;
+
+                Character.PleasureSkill = selectedPleasureSkill;
+
+                Character.Features.Clear();
+                if (feature1 != null)
+                     Character.Features.Add(feature1);
+
+                if (feature2 != null)
+                     Character.Features.Add(feature2);
+
+                if (feature3 != null)
+                     Character.Features.Add(feature3);
+
+                if (feature4 != null)
+                     Character.Features.Add(feature4);
+
+                Character.PurchasedFeatures = purchasedFeatures.ToList();
+
+
+                Character.Armor = selectedArmor;
+
+                Character.MainWeapon = selectedMainWeapon;
+
+                Character.OffWeapon = selectedOffWeapon;
+
+                Character.CurrentStats = currentStats;
+
+                Character.AvailablePoints = availablePoints;
+
+                // -------------------------------------------------
+                // RESTORE XP
+                // -------------------------------------------------
+
+                Character.XpPool = xpPool;
+                Character.XpSpent = xpSpent;
+
+                // -------------------------------------------------
+                // RESTORE PURCHASED SPELLS
+                // -------------------------------------------------
+
+                Character.PurchasedSpells = PurchasedSpells.ToList();
+
+                // -------------------------------------------------
+                // RESTORE LEARNED SPELLS
+                // -------------------------------------------------
+
+                Character.LearnedSpells = learnedSpells.ToList();
+
+                Character.LoF = loF;
+
+                Character.Damage = damage;
+
+            }
+            await OnCharacterChangedSheet.InvokeAsync(Character);
         }
         catch (Exception ex)
         {
