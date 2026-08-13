@@ -334,7 +334,7 @@
 
                         <input type="checkbox"
                                checked="@isChecked"
-                               disabled="@(!isChecked && xpRemaining < featureXpCost)"
+                               disabled="@((!isChecked && xpRemaining < featureXpCost) || isOwned)"
                                @onchange="e => OnFeatureToggled(
                                                                                    featureName,
                                                                                    featureXpCost,
@@ -988,6 +988,28 @@
 
             xpSpent +=
                 xpCost;
+
+            switch (featureName)
+            {
+                case "BardicPerformance":
+                case "Channel":
+                case "Counterspell":
+                case "EldritchBlast":
+                case "LayOnHands":
+                case "Purify":
+                case "Smite":
+                    // Already purchased.
+                    if (learnedSpells.Contains(
+                            featureName))
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        learnedSpells.Add(featureName);
+                    }
+                    break;
+            }
         }
         else
         {

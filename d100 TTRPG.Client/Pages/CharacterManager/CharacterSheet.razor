@@ -2130,6 +2130,25 @@
                     break;
             }
         }
+
+        foreach (var fname in purchasedFeatures)
+        {
+            if (string.IsNullOrEmpty(fname))
+                continue;
+
+            switch (fname)
+            {
+                case "BardicPerformance":
+                case "Channel":
+                case "Counterspell":
+                case "EldritchBlast":
+                case "LayOnHands":
+                case "Purify":
+                case "Smite":
+                    learnedSpells.Add(fname);
+                    break;
+            }
+        }
     }
 
 
