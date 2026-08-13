@@ -1,6 +1,7 @@
 using d100_TTRPG;
 using d100_TTRPG.Client.Pages;
 using d100_TTRPG.Components;
+using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,9 +41,11 @@ else
     app.UseHsts();
 }
 
-app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
+app.UseStatusCodePagesWithReExecute(
+    "/not-found",
+    createScopeForStatusCodePages: true);
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseAntiforgery();
 
@@ -53,8 +56,54 @@ app.MapControllers();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(typeof(d100_TTRPG.Client._Imports).Assembly);
+    .AddAdditionalAssemblies(
+        typeof(d100_TTRPG.Client._Imports).Assembly);
 
 GameDatabaseInitializer.Initialize();
+
+
+// ---------------------------------------------------------
+// Automatically open the application in the default browser
+// when the published EXE is launched.
+// ---------------------------------------------------------
+if (!app.Environment.IsDevelopment())
+{
+    app.Lifetime.ApplicationStarted.Register(() =>
+    {
+        try
+        {
+            var url = app.Urls
+                .FirstOrDefault(u =>
+                    u.StartsWith(
+                        "http://",
+                        StringComparison.OrdinalIgnoreCase))
+                ?? app.Urls.FirstOrDefault();
+
+            if (!string.IsNullOrWhiteSpace(url))
+            {
+                app.Logger.LogInformation(
+                    "Opening application in browser: {Url}",
+                    url);
+
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = url,
+                    UseShellExecute = true
+                });
+            }
+            else
+            {
+                app.Logger.LogWarning(
+                    "Application started, but no listening URL was found.");
+            }
+        }
+        catch (Exception ex)
+        {
+            app.Logger.LogWarning(
+                ex,
+                "Unable to automatically open the application browser.");
+        }
+    });
+}
 
 app.Run();
