@@ -1,5 +1,6 @@
 ﻿@inject HttpClient Http
 @using d100_TTRPG.Shared.Data_Objects
+
 <h1>Character Sheet</h1>
 
 <div class="card p-3 mb-3">
@@ -61,6 +62,7 @@
         </select>
 
     </div>
+
     <div class="mb-3">
 
         <label class="form-label">Location</label>
@@ -525,17 +527,21 @@
 
                 @if (featuresSelected.Any())
                 {
-                    <ul>
+                    <div class="sheet-description-list">
+
                         @foreach (var feature in featuresSelected.OrderBy(x => x.Key))
                         {
                             var description = GetFeatureDescription(feature.Value);
 
-                            <li class="description-hover"
-                                data-description="@description">
-                                @feature.Value
-                            </li>
+                            <div class="sheet-description-item">
+                                <label class="description-hover"
+                                       data-description="@description">
+                                    @feature.Value
+                                </label>
+                            </div>
                         }
-                    </ul>
+
+                    </div>
                 }
                 else
                 {
@@ -549,17 +555,21 @@
 
                 @if (skillCounts.Any())
                 {
-                    <ul>
+                    <div class="sheet-description-list">
+
                         @foreach (var kv in skillCounts.OrderBy(x => x.Key))
                         {
                             var description = GetSkillDescription(kv.Key);
 
-                            <li class="description-hover"
-                                data-description="@description">
-                                @kv.Key - @GetSkillRank(kv.Value)
-                            </li>
+                            <div class="sheet-description-item">
+                                <label class="description-hover"
+                                       data-description="@description">
+                                    @kv.Key - @GetSkillRank(kv.Value)
+                                </label>
+                            </div>
                         }
-                    </ul>
+
+                    </div>
                 }
                 else
                 {
@@ -573,17 +583,21 @@
 
                 @if (talents.Any())
                 {
-                    <ul>
+                    <div class="sheet-description-list">
+
                         @foreach (var talent in talents.OrderBy(x => x))
                         {
                             var description = GetTalentDescription(talent);
 
-                            <li class="description-hover"
-                                data-description="@description">
-                                @talent
-                            </li>
+                            <div class="sheet-description-item">
+                                <label class="description-hover"
+                                       data-description="@description">
+                                    @talent
+                                </label>
+                            </div>
                         }
-                    </ul>
+
+                    </div>
                 }
                 else
                 {
@@ -597,17 +611,21 @@
 
                 @if (traits.Any())
                 {
-                    <ul>
+                    <div class="sheet-description-list">
+
                         @foreach (var trait in traits.OrderBy(x => x))
                         {
                             var description = GetTraitDescription(trait);
 
-                            <li class="description-hover"
-                                data-description="@description">
-                                @trait
-                            </li>
+                            <div class="sheet-description-item">
+                                <label class="description-hover"
+                                       data-description="@description">
+                                    @trait
+                                </label>
+                            </div>
                         }
-                    </ul>
+
+                    </div>
                 }
                 else
                 {
@@ -616,37 +634,44 @@
                     </div>
                 }
 
+
                 <h6>Learned Spells</h6>
 
                 @if (learnedSpells.Any())
                 {
-                    <ul>
+                    <div class="sheet-description-list">
+
                         @foreach (var ls in learnedSpells.OrderBy(x => x))
                         {
                             var purchased = purchasedSpells.Contains(ls);
-
                             var description = GetSpellDescription(ls);
 
-                            <li class="description-hover"
-                                data-description="@description">
-                                @ls
+                            <div class="sheet-description-item">
 
-                                @if (purchased)
-                                {
-                                    <span class="text-muted">
-                                        (purchased)
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="text-success">
-                                        (granted)
-                                    </span>
-                                }
+                                <label class="description-hover"
+                                       data-description="@description">
 
-                            </li>
+                                    @ls
+
+                                    @if (purchased)
+                                    {
+                                        <span class="text-muted">
+                                            (purchased)
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-success">
+                                            (granted)
+                                        </span>
+                                    }
+
+                                </label>
+
+                            </div>
                         }
-                    </ul>
+
+                    </div>
                 }
                 else
                 {
@@ -654,7 +679,6 @@
                         No learned spells.
                     </div>
                 }
-
 
             </div>
 
@@ -864,14 +888,15 @@
 
                     </div>
 
-
                 </div>
+
 
                 <div class="card p-3 mb-3">
 
                     <h5>Attacks</h5>
 
-                    @if (string.IsNullOrEmpty(selectedMainWeapon) && string.IsNullOrEmpty(selectedOffWeapon))
+                    @if (string.IsNullOrEmpty(selectedMainWeapon) &&
+                         string.IsNullOrEmpty(selectedOffWeapon))
                     {
                         <div class="text-muted">
                             No weapons equipped.
@@ -880,6 +905,7 @@
                     else
                     {
                         <table class="table table-sm">
+
                             <thead>
                                 <tr>
                                     <th>Weapon</th>
@@ -891,6 +917,7 @@
                             </thead>
 
                             <tbody>
+
                                 @foreach (var weapon in equippedWeapons)
                                 {
                                     var key = "STR";
@@ -916,6 +943,7 @@
                                         effective / 10;
 
                                     <tr>
+
                                         <td>@weapon.Name</td>
 
                                         <td>
@@ -930,10 +958,13 @@
                                         </td>
 
                                         <td>
-                                            @if(weapon.Range == "Melee")
+                                            @if (weapon.Range == "Melee")
                                             {
                                                 <span>
-                                                @weapon.Damage+STR Bonus <span class= "text-muted"> (@charBonus) </span>
+                                                    @weapon.Damage+STR Bonus
+                                                    <span class="text-muted">
+                                                        (@charBonus)
+                                                    </span>
                                                 </span>
                                             }
                                             else
@@ -947,13 +978,17 @@
                                         <td>@weapon.Penetration</td>
 
                                         <td>@weapon.DamageTypes</td>
+
                                     </tr>
                                 }
+
                             </tbody>
+
                         </table>
                     }
 
                 </div>
+
             </div>
 
         </div>

@@ -59,6 +59,10 @@ h1:focus {
     text-align: start;
 }
 
+/* =========================================================
+   Character Improvement / General Description Tooltip
+   ========================================================= */
+
 .description-hover {
     position: relative;
     cursor: help;
@@ -88,6 +92,58 @@ h1:focus {
     }
 
     .description-hover:hover::after {
+        opacity: 1;
+        visibility: visible;
+    }
+
+
+/* =========================================================
+   Character Sheet Description Tooltip
+   ========================================================= */
+
+.sheet-description-list {
+    display: block !important;
+    margin-top: 0;
+    margin-bottom: 1rem;
+    padding-left: 2rem;
+}
+
+    .sheet-description-list > li {
+        display: list-item !important;
+        width: auto !important;
+        position: relative;
+    }
+
+.sheet-description-hover {
+    position: relative;
+    display: inline-block;
+    cursor: help;
+}
+
+    .sheet-description-hover::after {
+        content: attr(data-description);
+        position: absolute;
+        left: 100%;
+        top: 50%;
+        transform: translateY(-50%);
+        margin-left: 12px;
+        width: 300px;
+        padding: 10px;
+        background: #212529;
+        color: white;
+        border: 1px solid #495057;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        line-height: 1.4;
+        white-space: normal;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.15s ease, visibility 0.15s ease;
+        z-index: 9999;
+        pointer-events: none;
+    }
+
+    .sheet-description-hover:hover::after {
         opacity: 1;
         visibility: visible;
     }
