@@ -1138,18 +1138,8 @@
         // ALL FEATURES
         // ========================================================
 
-        var allFeatures =
-            new HashSet<string>(
-                characterFeatures);
-
-        foreach (var feature in purchasedFeatures)
-        {
-            allFeatures.Add(
-                feature);
-        }
-
         Character.Features =
-            allFeatures
+            characterFeatures
                 .Where(x =>
                     !string.IsNullOrWhiteSpace(x))
                 .OrderBy(x => x)

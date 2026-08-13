@@ -541,6 +541,18 @@
                             </div>
                         }
 
+                        @foreach (var feature in purchasedFeatures.OrderBy(x => x))
+                        {
+                            var description = GetFeatureDescription(feature);
+
+                            <div class="sheet-description-item">
+                                <label class="description-hover"
+                                       data-description="@description">
+                                    @feature
+                                </label>
+                            </div>
+                        }
+
                     </div>
                 }
                 else
@@ -1283,6 +1295,14 @@
         }
 
         featuresSelected = dict;
+
+        HashSet<string> hashSet = new HashSet<string>();
+        for (int i = 0; i < Character.PurchasedFeatures.Count; i++)
+        {
+            hashSet.Add(Character.PurchasedFeatures[i]);
+        }
+
+        purchasedFeatures = hashSet;
 
         // ============================================================
         // TALENTS
@@ -3132,6 +3152,11 @@
                         : null;
                 if (feature4 != null)
                     featuresSelected.Add(4, feature4);
+
+                for (int i = 0; i < dto.PurchasedFeatures.Count; i++)
+                {
+                    featuresSelected.Add(featuresSelected.Count + i + 1, dto.PurchasedFeatures[i]);
+                }
 
                 selectedArmor =
                     dto.Armor;
