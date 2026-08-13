@@ -866,6 +866,94 @@
 
 
                 </div>
+
+                <div class="card p-3 mb-3">
+
+                    <h5>Attacks</h5>
+
+                    @if (string.IsNullOrEmpty(selectedMainWeapon) && string.IsNullOrEmpty(selectedOffWeapon))
+                    {
+                        <div class="text-muted">
+                            No weapons equipped.
+                        </div>
+                    }
+                    else
+                    {
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Weapon</th>
+                                    <th>Attack</th>
+                                    <th>Damage</th>
+                                    <th>Pen</th>
+                                    <th>Type</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                @foreach (var weapon in equippedWeapons)
+                                {
+                                    var key = "STR";
+
+                                    var baseVal =
+                                        baseStats.ContainsKey(key)
+                                            ? baseStats[key]
+                                            : 0;
+
+                                    var curVal =
+                                        currentStats.ContainsKey(key)
+                                            ? currentStats[key]
+                                            : baseVal;
+
+                                    featureBonuses.TryGetValue(
+                                        key,
+                                        out var fb);
+
+                                    var effective =
+                                        curVal + fb;
+
+                                    var charBonus =
+                                        effective / 10;
+
+                                    <tr>
+                                        <td>@weapon.Name</td>
+
+                                        <td>
+                                            @if (weapon.Range == "Melee")
+                                            {
+                                                <span>Melee</span>
+                                            }
+                                            else
+                                            {
+                                                <span>Ranged</span>
+                                            }
+                                        </td>
+
+                                        <td>
+                                            @if(weapon.Range == "Melee")
+                                            {
+                                                <span>
+                                                @weapon.Damage+STR Bonus <span class= "text-muted"> (@charBonus) </span>
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span>
+                                                    @weapon.Damage
+                                                </span>
+                                            }
+                                        </td>
+
+                                        <td>@weapon.Penetration</td>
+
+                                        <td>@weapon.DamageTypes</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+
+                </div>
             </div>
 
         </div>
@@ -1059,6 +1147,7 @@
     private string? selectedArmor;
     private string? selectedMainWeapon;
     private string? selectedOffWeapon;
+    private List<WeaponDto> equippedWeapons = new();
 
     private Dictionary<string, int> baseStats = new();
     private Dictionary<string, int> currentStats = new();
@@ -1361,6 +1450,16 @@
         StateHasChanged();
     }
 
+    private List<WeaponDto> GetEquippedWeapons()
+    {
+        return weapons
+            .Where(w =>
+                w.Name == selectedMainWeapon ||
+                w.Name == selectedOffWeapon)
+                .OrderBy(w => w.Name == selectedMainWeapon ? 0 : 1)
+            .ToList();
+    }
+
     // =================================================
     // LOCATION
     // =================================================
@@ -1476,6 +1575,8 @@
             }
         }
 
+        equippedWeapons = GetEquippedWeapons();
+
         ReapplyAllBonusesSkillsTalentsTraits();
     }
 
@@ -1487,6 +1588,8 @@
     {
         selectedOffWeapon =
             e.Value?.ToString();
+
+        equippedWeapons = GetEquippedWeapons();
 
         ReapplyAllBonusesSkillsTalentsTraits();
     }
@@ -3003,6 +3106,8 @@
 
                 selectedOffWeapon =
                     dto.OffWeapon;
+
+                equippedWeapons = GetEquippedWeapons();
 
                 if (dto.CurrentStats != null &&
                     dto.CurrentStats.Count > 0)
