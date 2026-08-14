@@ -14,7 +14,8 @@ builder.Services.AddControllers();
 
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddScoped<UpdateService>();
+builder.Services.AddHttpClient();
+builder.Services.AddSingleton<UpdateService>();
 
 builder.Services.AddScoped(sp =>
 {

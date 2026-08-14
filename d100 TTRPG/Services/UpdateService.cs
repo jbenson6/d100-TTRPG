@@ -19,21 +19,25 @@ public class UpdateService
 
     public bool IsChecking { get; private set; }
 
-    public UpdateService(HttpClient httpClient)
-    {
-        this.httpClient = httpClient;
+    private bool hasChecked;
 
-        this.httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(
+    public UpdateService(IHttpClientFactory httpClientFactory)
+    {
+        httpClient = httpClientFactory.CreateClient();
+
+        httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(
             "d100-TTRPG-Updater");
     }
 
     public async Task CheckForUpdateAsync()
     {
-        if (IsChecking)
+        // Don't check GitHub more than once per application run.
+        if (hasChecked || IsChecking)
         {
             return;
         }
 
+        hasChecked = true;
         IsChecking = true;
 
         try
@@ -48,7 +52,7 @@ public class UpdateService
             }
 
             LatestVersion =
-                release.TagName.TrimStart('v');
+                release.TagName?.TrimStart('v');
 
             if (!Version.TryParse(
                     LatestVersion,
@@ -71,17 +75,19 @@ public class UpdateService
                 GitHubAsset? asset =
                     release.Assets?
                         .FirstOrDefault(a =>
+                            !string.IsNullOrWhiteSpace(a.Name) &&
                             a.Name.EndsWith(
                                 ".zip",
                                 StringComparison.OrdinalIgnoreCase));
 
-                DownloadUrl = asset?.BrowserDownloadUrl;
+                DownloadUrl =
+                    asset?.BrowserDownloadUrl;
             }
         }
         catch
         {
-            // Update checking should never prevent the application
-            // from running if GitHub is unavailable.
+            // Update checking should never prevent
+            // the application from running.
         }
         finally
         {
@@ -112,14 +118,8 @@ public class UpdateService
 
             await source.CopyToAsync(destination);
 
-            string? applicationDirectory =
+            string applicationDirectory =
                 AppContext.BaseDirectory;
-
-            if (string.IsNullOrWhiteSpace(
-                    applicationDirectory))
-            {
-                return false;
-            }
 
             string updaterPath =
                 Path.Combine(
