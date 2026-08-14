@@ -1,6 +1,7 @@
 using d100_TTRPG;
 using d100_TTRPG.Client.Pages;
 using d100_TTRPG.Components;
+using d100_TTRPG.Services;
 using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +13,8 @@ builder.Services.AddRazorComponents()
 builder.Services.AddControllers();
 
 builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddScoped<UpdateService>();
 
 builder.Services.AddScoped(sp =>
 {

@@ -1,4 +1,6 @@
 ﻿@inherits LayoutComponentBase
+@using d100_TTRPG.Services
+@inject UpdateService UpdateService
 
 <div class="page">
     <div class="sidebar">
@@ -7,8 +9,27 @@
 
     <main>
         <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">
+                About
+            </a>
         </div>
+
+        @if (UpdateService.UpdateAvailable)
+        {
+            <div class="alert alert-info m-3 d-flex align-items-center justify-content-between">
+                <div>
+                    <strong>Update available!</strong>
+                    <span class="ms-2">
+                        Version @UpdateService.LatestVersion is available.
+                    </span>
+                </div>
+
+                <button class="btn btn-primary"
+                        @onclick="InstallUpdate">
+                    Update Now
+                </button>
+            </div>
+        }
 
         <article class="content px-4">
             @Body
@@ -21,3 +42,21 @@
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        // Give the application a moment to finish starting,
+        // then check GitHub for a newer release.
+        await Task.Delay(2000);
+
+        await UpdateService.CheckForUpdateAsync();
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task InstallUpdate()
+    {
+        await UpdateService.InstallUpdateAsync();
+    }
+}
