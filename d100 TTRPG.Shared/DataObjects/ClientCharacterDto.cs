@@ -41,7 +41,11 @@
 
         public List<string> Traits { get; set; } = new();
 
+        public List<string> Languages { get; set; } = new();
+
         public List<string> Skills { get; set; } = new();
+
+        public List<string> PurchasedSkills { get; set; } = new();
 
         public List<string> BackgroundSkills { get; set; } = new();
         public List<string>? BackgroundSkillChoices { get; set; } = new();
@@ -55,6 +59,8 @@
         public List<string>? MotivationSkillChoices { get; set; } = new();
 
         public Dictionary<string, int> CharacteristicImprovementSteps { get; set; } = new();
+        public Dictionary<string, int> SkillImprovementSteps { get; set; } = new();
+
 
         public List<string> PurchasedTalents { get; set; } = new();
 

@@ -18,14 +18,27 @@ else
         <thead>
             <tr>
                 <th>Name</th>
+                <th>Skills</th>
                 <th>Description</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var t in trades)
             {
+                var skills = "";
                 <tr>
                     <td>@t.Name</td>
+                    @if (t.Skills != null)
+                    {
+                        @foreach (var s in t.Skills)
+                        {
+                            if (t.Skills.IndexOf(s) != t.Skills.Count - 1)
+                                skills += s + ", ";
+                            else
+                                skills += s;
+                        }
+                    }
+                    <td> @skills </td>
                     <td>@t.Description</td>
                 </tr>
             }
@@ -64,5 +77,6 @@ else
     {
         public string? Name { get; set; }
         public string? Description { get; set; }
+        public List<string>? Skills { get; set; }
     }
 }

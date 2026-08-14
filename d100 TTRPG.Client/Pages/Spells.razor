@@ -17,15 +17,22 @@ else
     <table class="table table-striped">
         <thead>
             <tr>
-                <th>Name</th>
+                <th @onclick="@(() => SortBy("Name"))" style="cursor:pointer;">
+                    Name @SortIndicator("Name")
+                </th>
                 <th>XP</th>
-                <th>MP</th>
+                <th @onclick="@(() => SortBy("MP"))" style="cursor:pointer;">
+                    MP @SortIndicator("MP")
+                </th>
                 <th>Difficulty</th>
-                <th>School</th>
+                <th @onclick="@(() => SortBy("MagicSchool"))" style="cursor:pointer;">
+                    School @SortIndicator("MagicSchool")
+                </th>
                 <th>Range</th>
                 <th>Targets</th>
             </tr>
         </thead>
+
         <tbody>
             @foreach (var s in spells)
             {
@@ -35,8 +42,7 @@ else
                     <td>@s.MP</td>
                     <td>@s.CastDifficulty</td>
                     <td>@s.MagicSchool</td>
-                    <td>@s.Range</td>
-                    <td>@s.NumTargets</td>
+                    <td>@s.Description</td>
                 </tr>
             }
         </tbody>
@@ -48,6 +54,9 @@ else
     private bool loaded = false;
     private string? saveMessage = "Loading spells...";
 
+    private string currentSort = "MagicSchool";
+    private bool sortAscending = true;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender || loaded)
@@ -55,18 +64,62 @@ else
 
         try
         {
-            spells = await Http.GetFromJsonAsync<List<SpellDto>>("api/spells") ?? new List<SpellDto>();
+            spells = await Http.GetFromJsonAsync<List<SpellDto>>("api/spells")
+                     ?? new List<SpellDto>();
+
+            SortSpells();
         }
         catch (Exception ex)
         {
-            saveMessage =
-                $"Unable to load spells: {ex.Message}";
-
-            loaded = true;
+            saveMessage = $"Unable to load spells: {ex.Message}";
         }
+
         saveMessage = "";
         loaded = true;
         StateHasChanged();
+    }
+
+    private void SortBy(string column)
+    {
+        if (currentSort == column)
+        {
+            sortAscending = !sortAscending;
+        }
+        else
+        {
+            currentSort = column;
+            sortAscending = true;
+        }
+
+        SortSpells();
+    }
+
+    private void SortSpells()
+    {
+        spells = currentSort switch
+        {
+            "Name" => sortAscending
+                ? spells.OrderBy(s => s.Name).ToList()
+                : spells.OrderByDescending(s => s.Name).ToList(),
+
+            "MP" => sortAscending
+                ? spells.OrderBy(s => s.MP).ToList()
+                : spells.OrderByDescending(s => s.MP).ToList(),
+
+            "MagicSchool" => sortAscending
+                ? spells.OrderBy(s => s.MagicSchool).ToList()
+                : spells.OrderByDescending(s => s.MagicSchool).ToList(),
+
+            _ => spells
+        };
+    }
+
+    private string SortIndicator(string column)
+    {
+        if (currentSort != column)
+            return "";
+
+        return sortAscending ? "▲" : "▼";
     }
 
     private class SpellDto
@@ -78,5 +131,6 @@ else
         public string? MagicSchool { get; set; }
         public int Range { get; set; }
         public int NumTargets { get; set; }
+        public string? Description { get; set; }
     }
 }

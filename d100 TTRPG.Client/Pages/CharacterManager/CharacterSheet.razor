@@ -227,7 +227,6 @@
                         @foreach (var skill in aristocratSkills)
                         {
                             <option value="@skill.Key"
-                                    disabled="@(skill.Key == selectedAristocratSkill1)"
                                     selected="@(selectedAristocratSkill2 == skill.Key)">
                                 @skill.Key
                             </option>
@@ -563,7 +562,7 @@
                 }
 
 
-                <h6>Skills</h6>
+                <h6 class="mt-3">Skills</h6>
 
                 @if (skillCounts.Any())
                 {
@@ -646,8 +645,31 @@
                     </div>
                 }
 
+                <h6 class="mt-3">Languages</h6>
 
-                <h6>Learned Spells</h6>
+                @if (languages.Any())
+                {
+                    <div class="sheet-description-list">
+
+                        @foreach (var language in languages.OrderBy(x => x))
+                        {
+                            <div class="sheet-description-item">
+                                <label>
+                                    @language
+                                </label>
+                            </div>
+                        }
+
+                    </div>
+                }
+                else
+                {
+                    <div class="text-muted">
+                        No languages.
+                    </div>
+                }
+
+                <h6 class="mt-3">Learned Spells</h6>
 
                 @if (learnedSpells.Any())
                 {
@@ -1185,6 +1207,8 @@
     private Dictionary<string, int> skillCounts = new();
     private List<string> talents = new();
     private List<string> traits = new();
+    private List<string> languages = new();
+    private List<string> purchasedSkills = new();
 
     private int totalFeatureWounds = 0;
     private int totalFeatureMP = 0;
@@ -1327,6 +1351,12 @@
         purchasedTalents = Character.PurchasedTalents != null
                                 ? new HashSet<string>(Character.PurchasedTalents)
                                 : new HashSet<string>();
+
+        purchasedSkills = Character.PurchasedSkills != null
+                ? new List<string>(Character.PurchasedSkills)
+                : new List<string>();
+
+        ReapplyAllBonusesSkillsTalentsTraits();
 
     }
 
@@ -1588,6 +1618,8 @@
                 availablePoints =
                     Math.Max(0, 120 - mandatory);
             }
+
+            languages = r.Languages;
         }
         else
         {
@@ -1847,6 +1879,8 @@
             Race =
                 selectedRace,
 
+            Languages = languages,
+
             Background =
                 selectedBackground,
 
@@ -1897,6 +1931,11 @@
                     .Where(x => x.Value > 0)
                     .OrderBy(x => x.Key)
                     .Select(x => x.Key)
+                    .ToList(),
+
+            PurchasedSkills = purchasedSkills
+                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                    .OrderBy(x => x)
                     .ToList(),
 
             BackgroundSkills =
@@ -2256,12 +2295,6 @@
         selectedAristocratSkill1 =
             e.Value?.ToString();
 
-        if (selectedAristocratSkill1 ==
-            selectedAristocratSkill2)
-        {
-            selectedAristocratSkill2 = null;
-        }
-
         ReapplyAllBonusesSkillsTalentsTraits();
     }
 
@@ -2273,12 +2306,6 @@
     {
         selectedAristocratSkill2 =
             e.Value?.ToString();
-
-        if (selectedAristocratSkill2 ==
-            selectedAristocratSkill1)
-        {
-            selectedAristocratSkill2 = null;
-        }
 
         ReapplyAllBonusesSkillsTalentsTraits();
     }
@@ -2853,6 +2880,16 @@
             }
         }
 
+        foreach(var sk in purchasedSkills)
+        {
+            skillCounts.TryGetValue(
+                   sk,
+                   out var sc);
+
+            skillCounts[sk] =
+                sc + 1;
+        }
+
         // -------------------------------------------------
         // ARMOR
         // -------------------------------------------------
@@ -3073,6 +3110,8 @@
                 selectedRace =
                     dto.Race;
 
+                languages = dto.Languages;
+
                 var raceDef =
                     races.FirstOrDefault(
                         x => x.Name == selectedRace);
@@ -3163,6 +3202,9 @@
                     //will not be more than 1
                     selectedPleasureSkill = dto.MotivationSkillChoices[0];
                 }
+
+                purchasedSkills = dto.PurchasedSkills;
+
                 featuresSelected.Clear();
 
                 feature1 =
@@ -3317,6 +3359,8 @@
 
                 Character.Race = selectedRace;
 
+                Character.Languages = languages;
+
                 Character.Background = selectedBackground;
 
                 Character.Trade = selectedTrade;
@@ -3332,6 +3376,13 @@
                 Character.ArtisanSkill = selectedArtisanSkill;
 
                 Character.PleasureSkill = selectedPleasureSkill;
+
+                Character.Skills =
+                skillCounts
+                    .Where(x => x.Value > 0)
+                    .OrderBy(x => x.Key)
+                    .Select(x => x.Key)
+                    .ToList();
 
                 Character.Features.Clear();
                 if (feature1 != null)

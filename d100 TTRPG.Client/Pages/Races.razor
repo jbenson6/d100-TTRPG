@@ -18,6 +18,7 @@ else
         <thead>
             <tr>
                 <th>Name</th>
+                <th>Race Bonuses</th>
                 <th>Wounds</th>
                 <th>MSK</th>
                 <th>RSK</th>
@@ -33,8 +34,75 @@ else
         <tbody>
             @foreach (var r in items)
             {
+                var bonuses = "";
+
+                var skills = "Skills: ";
+
+                var languages = "Languages: ";
+
+                var talents = "Talents: ";
+
+                var traits = "Traits: ";
+
+                var features = "Features: ";
                 <tr>
                     <td>@r.Name</td>
+                    @if (r.Skills != null && r.Skills.Count > 0)
+                    {
+                        @foreach (var s in r.Skills)
+                        {
+                            if (r.Skills.IndexOf(s) != r.Skills.Count - 1)
+                                skills += s + ", ";
+                            else
+                                skills += s;
+                        }
+                        bonuses += skills + "\n";
+                    }
+                    @if (r.Languages != null && r.Languages.Count > 0)
+                    {
+                        @foreach (var s in r.Languages)
+                        {
+                            if (r.Languages.IndexOf(s) != r.Languages.Count - 1)
+                                languages += s + ", ";
+                            else
+                                languages += s;
+                        }
+                        bonuses += languages + "\n";
+                    }
+                    @if (r.Talents != null && r.Talents.Count > 0)
+                    {
+                        @foreach (var s in r.Talents)
+                        {
+                            if (r.Talents.IndexOf(s) != r.Talents.Count - 1)
+                                talents += s + ", ";
+                            else
+                                talents += s;
+                        }
+                        bonuses += talents + "\n";
+                    }
+                    @if (r.Traits != null && r.Traits.Count > 0)
+                    {
+                        @foreach (var s in r.Traits)
+                        {
+                            if (r.Traits.IndexOf(s) != r.Traits.Count - 1)
+                                traits += s + ", ";
+                            else
+                                traits += s;
+                        }
+                        bonuses += traits + "\n";
+                    }
+                    @if (r.Features != null && r.Features.Count > 0)
+                    {
+                        @foreach (var s in r.Features)
+                        {
+                            if (r.Features.IndexOf(s) != r.Features.Count - 1)
+                                features += s + ", ";
+                            else
+                                features += s;
+                        }
+                        bonuses += features + "\n";
+                    }
+                    <td style="white-space: pre-line;">@bonuses</td>
                     <td>@r.Wounds</td>
                     <td>@r.MSK</td>
                     <td>@r.RSK</td>
@@ -90,5 +158,12 @@ else
         public int PER { get; set; }
         public int WPR { get; set; }
         public int CHA { get; set; }
+
+        public List<string>? Skills { get; set; }
+        public List<string>? Languages { get; set; }
+        public List<string>? Talents { get; set; }
+        public List<string>? Traits { get; set; }
+        public List<string>? Features { get; set; }
+
     }
 }

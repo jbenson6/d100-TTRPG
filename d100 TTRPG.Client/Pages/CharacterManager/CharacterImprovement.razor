@@ -69,77 +69,90 @@
 
         <div class="col-md-12">
 
-            <h6>Characteristics</h6>
+            <div class="border rounded mb-3">
+                <button class="btn btn-link w-100 text-start text-decoration-none"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#characteristicsSection"
+                        aria-expanded="false"
+                        aria-controls="characteristicsSection">
+                    <strong>Characteristics</strong>
+                    <span class="float-end">▼</span>
+                </button>
 
-            <div class="row">
+                <div id="characteristicsSection" class="collapse">
+                    <div class="p-2">
 
-                @foreach (var characteristic in characteristics)
-                {
-                    var steps =
-                        GetCharacteristicImprovementSteps(
-                            characteristic);
+                        <div class="row">
 
-                    var cost =
-                        GetCharacteristicImprovementCost(
-                            characteristic);
-
-                    var currentValue =
-                        GetCharacteristicValue(
-                            characteristic);
-
-                    featureBonuses.TryGetValue(
-                                        characteristic,
-                                        out var fb);
-
-                    var effective = currentValue + fb;
-
-                    var maxed =
-                        steps >= 4;
-
-                    var canPurchase =
-                        !maxed &&
-                        xpRemaining >= cost;
-
-                    <div class="col-md-4 col-lg-3 mb-2">
-
-                        <div class="border rounded p-2">
-
-                            <div class="d-flex justify-content-between">
-
-                                <strong>
-                                    @characteristic
-                                </strong>
-
-                                <span>
-                                    @effective
-                                </span>
-
-                            </div>
-
-                            <div class="small text-muted mb-1">
-
-                                Improvement:
-                                @steps / 4
-
-                            </div>
-
-                            @if (maxed)
+                            @foreach (var characteristic in characteristics)
                             {
-                                <div class="text-success small">
-                                    Maximum reached
-                                </div>
-                            }
-                            else
-                            {
-                                <div class="d-flex align-items-center">
+                                var steps =
+                                    GetCharacteristicImprovementSteps(characteristic);
 
-                                    <button class="btn btn-sm btn-outline-success"
-                                           disabled="@(!canPurchase)"
-                                           @onclick="e => OnCharacteristicToggled(characteristic)" > + </button>
+                                var cost =
+                                    GetCharacteristicImprovementCost(characteristic);
 
-                                    <label class="ms-1">
-                                        +5 (@cost xp)
-                                    </label>
+                                var currentValue =
+                                    GetCharacteristicValue(characteristic);
+
+                                featureBonuses.TryGetValue(
+                                    characteristic,
+                                    out var fb);
+
+                                var effective = currentValue + fb;
+
+                                var maxed = steps >= 4;
+
+                                var canPurchase =
+                                    !maxed &&
+                                    xpRemaining >= cost;
+
+                                <div class="col-md-4 col-lg-3 mb-2">
+
+                                    <div class="border rounded p-2">
+
+                                        <div class="d-flex justify-content-between">
+
+                                            <strong>
+                                                @characteristic
+                                            </strong>
+
+                                            <span>
+                                                @effective
+                                            </span>
+
+                                        </div>
+
+                                        <div class="small text-muted mb-1">
+                                            Improvement:
+                                            @steps / 4
+                                        </div>
+
+                                        @if (maxed)
+                                        {
+                                            <div class="text-success small">
+                                                Maximum reached
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="d-flex align-items-center">
+
+                                                <button class="btn btn-sm btn-outline-success"
+                                                        disabled="@(!canPurchase)"
+                                                        @onclick="e => OnCharacteristicToggled(characteristic)">
+                                                    +
+                                                </button>
+
+                                                <label class="ms-1">
+                                                    +5 (@cost xp)
+                                                </label>
+
+                                            </div>
+                                        }
+
+                                    </div>
 
                                 </div>
                             }
@@ -147,8 +160,95 @@
                         </div>
 
                     </div>
-                }
+                </div>
+            </div>
 
+            <div class="border rounded mb-3">
+                <button class="btn btn-link w-100 text-start text-decoration-none"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#skillsSection"
+                        aria-expanded="false"
+                        aria-controls="skillsSection">
+                    <strong>Skills</strong>
+                    <span class="float-end">▼</span>
+                </button>
+
+                <div id="skillsSection" class="collapse">
+                    <div class="p-2">
+
+                        <div class="row">
+
+                            @foreach (var skill in skillList)
+                            {
+                                var steps =
+                                    GetSkillImprovementSteps(skill.Name);
+
+                                var cost =
+                                    GetSkillImprovementCost(skill.Name);
+
+                                var currentValue =
+                                    GetSkillRank(steps);
+
+                                var maxed = steps >= 4;
+
+                                var canPurchase =
+                                    !maxed &&
+                                    xpRemaining >= cost;
+
+                                <div class="col-md-4 col-lg-3 mb-2">
+
+                                    <div class="border rounded p-2">
+
+                                        <div class="d-flex justify-content-between">
+
+                                            <strong>
+                                                @skill.Name
+                                            </strong>
+
+                                            <span>
+                                                @currentValue
+                                            </span>
+
+                                        </div>
+
+                                        <div class="small text-muted mb-1">
+                                            Improvement:
+                                            @steps / 4
+                                        </div>
+
+                                        @if (maxed)
+                                        {
+                                            <div class="text-success small">
+                                                Maximum reached
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="d-flex align-items-center">
+
+                                                <button class="btn btn-sm btn-outline-success"
+                                                        disabled="@(!canPurchase)"
+                                                        @onclick="e => OnSkillToggled(skill.Name)">
+                                                    +
+                                                </button>
+
+                                                <label class="ms-1">
+                                                    +5 (@cost xp)
+                                                </label>
+
+                                            </div>
+                                        }
+
+                                    </div>
+
+                                </div>
+                            }
+
+                        </div>
+
+                    </div>
+                </div>
             </div>
 
         </div>
@@ -378,6 +478,9 @@
     private const int MaximumCharacteristicImprovements =
         4;
 
+    private const int MaximumSkillImprovements =
+        4;
+
 
     // ============================================================
     // CHARACTERISTICS
@@ -449,6 +552,9 @@
     // Magic Proficiency can be purchased multiple times.
     private List<string> purchasedTalents = new();
 
+    private List<string> characterSkills = new();
+    private List<string> purchasedSkills = new();
+    private Dictionary<string, int> skillCounts = new();
 
     // ============================================================
     // FEATURE TRACKING
@@ -479,6 +585,10 @@
     // for a total of +10.
     private Dictionary<string, int>
         characteristicImprovementSteps =
+            new();
+
+    private Dictionary<string, int>
+        skillImprovementSteps =
             new();
 
 
@@ -748,7 +858,314 @@
         await NotifyCharacterChanged();
     }
 
+    // ============================================================
+    // Skill HELPERS
+    // ============================================================
 
+    private int GetSkillImprovementSteps(
+        string skill)
+    {
+        if (skillCounts.TryGetValue(
+                skill,
+                out var steps))
+        {
+            return Math.Clamp(
+                steps,
+                0,
+                MaximumSkillImprovements);
+        }
+
+        return 0;
+    }
+
+
+    private int GetSkillImprovementCost(
+        string skill)
+    {
+        var steps =
+            GetSkillImprovementSteps(
+                skill);
+
+        return steps switch
+        {
+            0 => 200,
+            1 => 350,
+            2 => 500,
+            3 => 750,
+            _ => 0
+        };
+    }
+
+
+    private string GetSkillRank(int count)
+    {
+        return count switch
+        {
+            0 => "Untrained",
+            1 => "Trained",
+            2 => "Proficient",
+            3 => "Adept",
+            >= 4 => "Expert",
+            _ => ""
+        };
+    }
+
+
+    private void IncreaseSkillValue(
+    string skill)
+    {
+        if (Character == null)
+            return;
+
+        purchasedSkills.Add(skill);
+        GetSkillCounts();
+    }
+
+
+    // ============================================================
+    // Skill TOGGLE
+    // ============================================================
+
+    private async Task OnSkillToggled(
+        string skill)
+    {
+
+        if (Character == null)
+            return;
+
+        var currentSteps =
+            GetSkillImprovementSteps(
+                skill);
+
+        // Maximum of four improvements.
+        if (currentSteps >= MaximumSkillImprovements)
+            return;
+
+        var xpCost =
+            GetSkillImprovementCost(
+                skill);
+
+        // Not enough XP.
+        if (xpRemaining < xpCost)
+            return;
+
+        // Record the new improvement step.
+        skillImprovementSteps[skill] =
+            currentSteps + 1;
+
+        // Apply exactly one +5 increase.
+        IncreaseSkillValue(
+            skill);
+
+        // Spend the XP for this step.
+        xpSpent += xpCost;
+
+        await NotifyCharacterChanged();
+    }
+
+    private void GetSkillCounts()
+    {
+        skillCounts.Clear();
+
+        // -------------------------------------------------
+        // RACE
+        // -------------------------------------------------
+
+        var race =
+            races.FirstOrDefault(
+                r => r.Name == selectedRace);
+
+        if (race != null)
+        {
+            foreach (var skill in race.Skills)
+            {
+                AddSkillCount(
+                    skillCounts,
+                    skill,
+                    1);
+            }
+        }
+
+        // -------------------------------------------------
+        // FEATURES
+        // -------------------------------------------------
+
+        var selectedFeatures =
+            new[]
+            {
+            feature1,
+            feature2,
+            feature3,
+            feature4
+            };
+
+        foreach (var fname in selectedFeatures)
+        {
+            if (string.IsNullOrEmpty(fname))
+                continue;
+
+            var f =
+                features.FirstOrDefault(
+                    x => x.Name == fname);
+
+            if (f == null)
+                continue;
+
+            foreach (var sk in f.Skills)
+            {
+                skillCounts.TryGetValue(
+                    sk,
+                    out var sc);
+
+                skillCounts[sk] =
+                    sc + 1;
+            }
+
+
+        }
+
+        // -------------------------------------------------
+        // BACKGROUND
+        // -------------------------------------------------
+
+        if (!string.IsNullOrEmpty(selectedBackground))
+        {
+            var b =
+                backgrounds.FirstOrDefault(
+                    x => x.Name == selectedBackground);
+
+            if (b != null &&
+                b.Skills != null)
+            {
+                foreach (var sk in b.Skills)
+                {
+                    skillCounts.TryGetValue(
+                        sk,
+                        out var sc);
+
+                    skillCounts[sk] =
+                        sc + 1;
+                }
+            }
+
+            if (selectedBackground == "Aristocrat")
+            {
+                AddSkillCount(
+                    skillCounts,
+                    selectedAristocratSkill1,
+                    1);
+
+                AddSkillCount(
+                    skillCounts,
+                    selectedAristocratSkill2,
+                    1);
+            }
+        }
+
+        // -------------------------------------------------
+        // TRADE
+        // -------------------------------------------------
+
+        if (!string.IsNullOrEmpty(selectedTrade))
+        {
+            var t =
+                trades.FirstOrDefault(
+                    x => x.Name == selectedTrade);
+
+            if (t != null &&
+                t.Skills != null)
+            {
+                foreach (var sk in t.Skills)
+                {
+                    skillCounts.TryGetValue(
+                        sk,
+                        out var sc);
+
+                    skillCounts[sk] =
+                        sc + 1;
+                }
+            }
+
+            if (selectedTrade == "Scholar")
+            {
+                AddSkillCount(
+                    skillCounts,
+                    selectedScholarSkill,
+                    2);
+            }
+
+            if (selectedTrade == "Artisan")
+            {
+                AddSkillCount(
+                    skillCounts,
+                    selectedArtisanSkill,
+                    1);
+            }
+        }
+
+        // -------------------------------------------------
+        // MOTIVATION
+        // -------------------------------------------------
+
+        if (!string.IsNullOrEmpty(selectedMotivation))
+        {
+            var m =
+                motivations.FirstOrDefault(
+                    x => x.Name == selectedMotivation);
+
+            if (m != null &&
+                m.Skills != null)
+            {
+                foreach (var sk in m.Skills)
+                {
+                    skillCounts.TryGetValue(
+                        sk,
+                        out var sc);
+
+                    skillCounts[sk] =
+                        sc + 1;
+                }
+            }
+
+            if (selectedMotivation == "Pleasure")
+            {
+                AddSkillCount(
+                    skillCounts,
+                    selectedPleasureSkill,
+                    1);
+            }
+        }
+
+        foreach (var sk in purchasedSkills)
+        {
+            skillCounts.TryGetValue(
+                   sk,
+                   out var sc);
+
+            skillCounts[sk] =
+                sc + 1;
+        }
+    }
+
+    // =================================================
+    // ADD SKILL COUNT
+    // =================================================
+
+    private void AddSkillCount(
+        Dictionary<string, int> counts,
+        string? skill,
+        int amount)
+    {
+        if (string.IsNullOrEmpty(skill))
+            return;
+
+        counts.TryGetValue(
+            skill,
+            out var current);
+
+        counts[skill] =
+            current + amount;
+    }
     // ============================================================
     // MAGIC PROFICIENCY
     // ============================================================
@@ -1176,7 +1593,21 @@
             new Dictionary<string, int>(
                 characteristicImprovementSteps);
 
+        Character.SkillImprovementSteps =
+            new Dictionary<string, int>(
+                skillImprovementSteps);
 
+        Character.PurchasedSkills =
+            purchasedSkills
+                .Where(x =>
+                    !string.IsNullOrWhiteSpace(x))
+                .ToList();
+
+        Character.Skills =
+            characterSkills
+                .Where(x =>
+                    !string.IsNullOrWhiteSpace(x))
+                .ToList();
         // ========================================================
         // NOTIFY PARENT
         // ========================================================
@@ -1538,8 +1969,38 @@
         characterLoaded =
             true;
 
+        characterSkills = dto.Skills != null
+                ? new List<string>(
+                    dto.Skills
+                        .Where(t =>
+                            !string.IsNullOrWhiteSpace(t)))
+                : new List<string>();
+
+        purchasedSkills = dto.PurchasedSkills != null
+                ? new List<string>(
+                    dto.PurchasedSkills
+                        .Where(t =>
+                            !string.IsNullOrWhiteSpace(t)))
+                : new List<string>();
+
+        skillImprovementSteps =
+            dto.SkillImprovementSteps != null
+                ? new Dictionary<string, int>(
+                    dto.SkillImprovementSteps)
+                : new Dictionary<string, int>();
+
+        selectedBackground = dto.Background;
+        selectedTrade = dto.Trade;
+        selectedMotivation = dto.Motivation;
+        selectedAristocratSkill1 = dto.AristocratSkill1;
+        selectedAristocratSkill2 = dto.AristocratSkill2;
+        selectedArtisanSkill = dto.ArtisanSkill;
+        selectedPleasureSkill = dto.PleasureSkill;
+        selectedScholarSkill = dto.ScholarSkill;
+
 
         RebuildLearnedSpells();
+        GetSkillCounts();
     }
 
 

@@ -18,14 +18,27 @@ else
         <thead>
             <tr>
                 <th>Name</th>
+                <th>Skills</th>
                 <th>Description</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var m in items)
             {
+                var skills = "";
                 <tr>
                     <td>@m.Name</td>
+                    @if (m.Skills != null)
+                    {
+                        @foreach (var s in m.Skills)
+                        {
+                            if (m.Skills.IndexOf(s) != m.Skills.Count - 1)
+                                skills += s + ", ";
+                            else
+                                skills += s;
+                        }
+                    }
+                    <td> @skills </td>
                     <td>@m.Description</td>
                 </tr>
             }
@@ -59,5 +72,10 @@ else
         StateHasChanged();
     }
 
-    private class SimpleDto { public string? Name { get; set; } public string? Description { get; set; } }
+    private class SimpleDto
+    {
+        public string? Name { get; set; }
+        public string? Description { get; set; }
+        public List<string>? Skills { get; set; }
+    }
 }

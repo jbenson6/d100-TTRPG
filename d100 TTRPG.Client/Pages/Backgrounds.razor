@@ -18,6 +18,8 @@ else
         <thead>
             <tr>
                 <th>Name</th>
+                <th>Skills</th>
+                <th>Talent</th>
                 <th>Description</th>
                 <th>Notes</th>
             </tr>
@@ -25,8 +27,21 @@ else
         <tbody>
             @foreach (var b in backgrounds)
             {
+                var skills = "";
                 <tr>
                     <td>@b.Name</td>
+                    @if (b.Skills != null)
+                    {
+                        @foreach (var s in b.Skills)
+                        {
+                            if (b.Skills.IndexOf(s) != b.Skills.Count - 1)
+                                skills += s + ", ";
+                            else
+                                skills += s;
+                        }
+                    }
+                    <td> @skills </td>
+                    <td>@b.Talent</td>
                     <td>@b.Description</td>
                     <td>@b.AdditionalNotes</td>
                 </tr>
@@ -66,5 +81,7 @@ else
         public string? Name { get; set; }
         public string? Description { get; set; }
         public string? AdditionalNotes { get; set; }
+        public List<string>? Skills { get; set; }
+        public string Talent { get; set; }
     }
 }
