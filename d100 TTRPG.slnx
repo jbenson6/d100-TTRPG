@@ -1,4 +1,8 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="publish.bat" />
+    <File Path="publish_instructions.txt" />
+  </Folder>
   <Project Path="d100 TTRPG.Client/d100 TTRPG.Client.csproj" />
   <Project Path="d100 TTRPG.Shared/d100 TTRPG.Shared.csproj" Id="d4389559-445b-4ca1-b557-1cb2d8216f8f" />
   <Project Path="d100 TTRPG.Updater/d100 TTRPG.Updater.csproj" Id="5eba21ba-7cee-4ab2-be0a-d5003a23a57d" />

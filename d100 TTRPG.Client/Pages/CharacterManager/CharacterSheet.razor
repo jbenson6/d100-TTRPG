@@ -1029,39 +1029,20 @@
 
     </div>
 
-    <div class="mt-3">
+    <div class="card p-3 mt-3">
 
         <button class="btn btn-primary"
-                @onclick="Submit">
-            Create
+                @onclick="SaveCharacter"
+                disabled="@(!CanSave())">
+            Create & Save
         </button>
 
-    </div>
-
-    @if (!string.IsNullOrEmpty(message))
-    {
-        <div class="alert alert-info mt-3">
-            @message
-        </div>
-    }
-
-</div>
-
-<div class="card p-3 mt-3">
-
-    <h5>Save</h5>
-
-    <div class="row g-2 align-items-center">
-
-        <div class="col-auto">
-
-            <button class="btn btn-success"
-                    @onclick="SaveCharacter"
-                    disabled="@(!CanSave())">
-                Save
-            </button>
-
-        </div>
+        @if (!string.IsNullOrEmpty(saveMessage))
+        {
+            <div class="alert alert-info mt-3">
+                @saveMessage
+            </div>
+        }
 
     </div>
 
@@ -1822,20 +1803,18 @@
     // SUBMIT
     // =================================================
 
-    private void Submit()
+    private async Task CreateAndSaveCharacter()
     {
-        message =
-            $"Created character: Location={selectedLocation}, " +
-            $"Race={selectedRace}, " +
-            $"Background={selectedBackground}, " +
-            $"Trade={selectedTrade}, " +
-            $"Motivation={selectedMotivation}, " +
-            $"Features=[{feature1},{feature2},{feature3},{feature4}], " +
-            $"Talents=[{string.Join(", ", talents)}], " +
-            $"Traits=[{string.Join(", ", traits)}], " +
-            $"XP Spent={xpSpent}, " +
-            $"XP Remaining={xpRemaining}, " +
-            $"Learned Spells=[{string.Join(", ", learnedSpells)}]";
+        if (!CanSave())
+        {
+            saveMessage =
+                "Provide Name, Location and Race before saving.";
+
+            return;
+        }
+
+        // Build the character/save data and save it.
+        await SaveCharacter();
     }
 
     // =================================================
@@ -2030,24 +2009,22 @@
                         "path",
                         out var pathProp))
                     {
-                        saveMessage =
-                            $"Saved: {pathProp.GetString()}";
+                        saveMessage = $"Character created and saved: {pathProp.GetString()}";
                     }
                     else if (doc.RootElement.TryGetProperty(
                         "file",
                         out var fileProp))
                     {
-                        saveMessage =
-                            $"Saved: {fileProp.GetString()}";
+                        saveMessage = $"Character created and saved: {pathProp.GetString()}";
                     }
                     else
                     {
-                        saveMessage = "Saved.";
+                        saveMessage = "Character created and saved.";
                     }
                 }
                 catch
                 {
-                    saveMessage = "Saved.";
+                    saveMessage = "Character created and saved.";
                 }
 
                 await LoadSavedFiles();

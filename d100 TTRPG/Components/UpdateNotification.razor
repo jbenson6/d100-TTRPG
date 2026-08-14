@@ -1,0 +1,41 @@
+﻿@rendermode InteractiveServer
+
+@using d100_TTRPG.Services
+@inject UpdateService UpdateService
+
+@if (UpdateService.UpdateAvailable)
+{
+    <div class="alert alert-info m-3 d-flex align-items-center justify-content-between">
+        <div>
+            <strong>Update available!</strong>
+            <span class="ms-2">
+                Version @UpdateService.LatestVersion is available.
+            </span>
+        </div>
+
+        <button class="btn btn-primary"
+                @onclick="InstallUpdate">
+            Update Now
+        </button>
+    </div>
+}
+
+@code {
+    protected override void OnInitialized()
+    {
+        _ = CheckForUpdateInBackground();
+    }
+
+    private async Task CheckForUpdateInBackground()
+    {
+        await UpdateService.CheckForUpdateAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task InstallUpdate()
+    {
+        Console.WriteLine("UPDATE BUTTON CLICKED");
+        var result = await UpdateService.InstallUpdateAsync();
+        Console.WriteLine($"INSTALL UPDATE RESULT: {result}");
+    }
+}
