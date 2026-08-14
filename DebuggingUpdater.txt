@@ -1,0 +1,1 @@
+Error Logs for Updater are stored here: %TEMP%\d100-TTRPG-update-error.txt

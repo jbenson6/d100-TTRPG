@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/Solution Items/">
+    <File Path="DebuggingUpdater.txt" />
     <File Path="publish.bat" />
     <File Path="publish_instructions.txt" />
   </Folder>

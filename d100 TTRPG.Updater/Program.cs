@@ -4,8 +4,8 @@ using System.IO.Compression;
 if (args.Length < 2)
     return;
 
-string zipPath = args[0];
-string applicationDirectory = args[1];
+string zipPath = args[0].Trim('"');
+string applicationDirectory = args[1].Trim('"');
 
 string applicationExe = Path.Combine(
     applicationDirectory,
