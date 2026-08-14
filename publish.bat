@@ -4,7 +4,7 @@ cd /d "D:\Projects\d100 TTRPG"
 
 echo.
 echo ========================================
-echo   Publishing d100 TTRPG v1.0.0
+echo   Publishing d100 TTRPG v1.0.1
 echo ========================================
 echo.
 
@@ -24,45 +24,45 @@ if errorlevel 1 goto :error
 
 echo.
 echo [4/6] Creating ZIP...
-powershell -NoProfile -Command "Compress-Archive -Path '.\d100 TTRPG\bin\Release\net10.0\win-x64\publish\*' -DestinationPath '.\d100 TTRPG\bin\Release\net10.0\win-x64\d100-TTRPG-1.0.0.zip' -Force"
+powershell -NoProfile -Command "Compress-Archive -Path '.\d100 TTRPG\bin\Release\net10.0\win-x64\publish\*' -DestinationPath '.\d100 TTRPG\bin\Release\net10.0\win-x64\d100-TTRPG-1.0.1.zip' -Force"
 if errorlevel 1 goto :error
 
 echo.
 echo [5/6] Checking GitHub release...
 
-gh release view v1.0.0 --repo jbenson6/d100-TTRPG >nul 2>&1
+gh release view v1.0.1 --repo jbenson6/d100-TTRPG >nul 2>&1
 
 if errorlevel 1 (
-    echo Release v1.0.0 does not exist.
+    echo Release v1.0.1 does not exist.
     echo Creating new GitHub release...
 
-    gh release create v1.0.0 ".\d100 TTRPG\bin\Release\net10.0\win-x64\d100-TTRPG-1.0.0.zip" --repo jbenson6/d100-TTRPG --title "v1.0.0" --notes "Initial release."
+    gh release create v1.0.1 ".\d100 TTRPG\bin\Release\net10.0\win-x64\d100-TTRPG-1.0.1.zip" --repo jbenson6/d100-TTRPG --title "v1.0.1" --notes "Initial release."
 
     if errorlevel 1 goto :error
 
     goto :success
 )
 
-echo Release v1.0.0 already exists.
+echo Release v1.0.1 already exists.
 echo Removing old asset if present...
 
-gh release delete-asset v1.0.0 d100-TTRPG-1.0.0.zip --repo jbenson6/d100-TTRPG -y >nul 2>&1
+gh release delete-asset v1.0.1 d100-TTRPG-1.0.1.zip --repo jbenson6/d100-TTRPG -y >nul 2>&1
 
 echo.
 echo [6/6] Uploading new GitHub asset...
 
-gh release upload v1.0.0 ".\d100 TTRPG\bin\Release\net10.0\win-x64\d100-TTRPG-1.0.0.zip" --repo jbenson6/d100-TTRPG
+gh release upload v1.0.1 ".\d100 TTRPG\bin\Release\net10.0\win-x64\d100-TTRPG-1.0.1.zip" --repo jbenson6/d100-TTRPG
 
 if errorlevel 1 goto :error
 
 :success
 echo.
 echo ========================================
-echo   v1.0.0 published successfully!
+echo   v1.0.1 published successfully!
 echo ========================================
 echo.
 echo GitHub release:
-echo https://github.com/jbenson6/d100-TTRPG/releases/tag/v1.0.0
+echo https://github.com/jbenson6/d100-TTRPG/releases/tag/v1.0.1
 echo.
 pause
 exit /b 0
