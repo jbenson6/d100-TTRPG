@@ -1,4 +1,4 @@
 Steps:
 1. Update bat file
 2. Run powershell line: Start-Process "cmd.exe" -ArgumentList '/k ".\publish.bat"'
-3. Test Update: Start-Process "D:\Downloads\d100-TTRPG-1.0.2\d100_TTRPG.exe"
+3. Test Update: Start-Process "D:\Downloads\d100-TTRPG-1.0.0\d100_TTRPG.exe"

@@ -1,6 +1,5 @@
 @echo off
 setlocal
-
 cd /d "D:\Projects\d100 TTRPG"
 
 echo.
@@ -29,15 +28,34 @@ powershell -NoProfile -Command "Compress-Archive -Path '.\d100 TTRPG\bin\Release
 if errorlevel 1 goto :error
 
 echo.
-echo [5/6] Removing old GitHub asset...
-gh release delete-asset v1.0.0 d100-TTRPG-1.0.0.zip --repo jbenson6/d100-TTRPG -y
-if errorlevel 1 goto :error
+echo [5/6] Checking GitHub release...
+
+gh release view v1.0.0 --repo jbenson6/d100-TTRPG >nul 2>&1
+
+if errorlevel 1 (
+    echo Release v1.0.0 does not exist.
+    echo Creating new GitHub release...
+
+    gh release create v1.0.0 ".\d100 TTRPG\bin\Release\net10.0\win-x64\d100-TTRPG-1.0.0.zip" --repo jbenson6/d100-TTRPG --title "v1.0.0" --notes "Initial release."
+
+    if errorlevel 1 goto :error
+
+    goto :success
+)
+
+echo Release v1.0.0 already exists.
+echo Removing old asset if present...
+
+gh release delete-asset v1.0.0 d100-TTRPG-1.0.0.zip --repo jbenson6/d100-TTRPG -y >nul 2>&1
 
 echo.
 echo [6/6] Uploading new GitHub asset...
+
 gh release upload v1.0.0 ".\d100 TTRPG\bin\Release\net10.0\win-x64\d100-TTRPG-1.0.0.zip" --repo jbenson6/d100-TTRPG
+
 if errorlevel 1 goto :error
 
+:success
 echo.
 echo ========================================
 echo   v1.0.0 published successfully!
