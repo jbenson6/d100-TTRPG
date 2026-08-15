@@ -1,4 +1,6 @@
-﻿namespace d100_TTRPG.Data_Objects.Trait
+﻿using static System.Runtime.InteropServices.JavaScript.JSType;
+
+namespace d100_TTRPG.Data_Objects.Trait
 {
     public static class TraitDb
     {
@@ -36,7 +38,7 @@
             "Blind creatures automatically fail all tests based on vision and automatically fail all RSK Tests. " +
             "Such creatures take a -30 penalty to MSK Tests and most other tests that ordinarily involve or are benefited by vision. " +
             "This Trait indicates not only that the creature cannot see but that it also has no other senses which would provide the same benefit as eyes. " +
-            "The Blind Fighting Talent reduces the penalties to MSK Tests as normal for Blind creatures, reducing it from -30 to -15."
+            "The Blind Fighting trait reduces the penalties to MSK Tests as normal for Blind creatures, reducing it from -30 to -15."
         );
 
         public static readonly TraitDefinition BrutalCharge = new TraitDefinition(
@@ -142,7 +144,7 @@
             "Incorporeal creatures gain the Hoverer (6) trait. " +
             "An incorporeal creature is also immune to normal weapons—they simply pass through its body as if it wasn't there. " +
             "Spells, other incorporeal creatures, and opponents armed with magical weapons may all injure an incorporeal creature normally. " +
-            "An incorporeal creature can't normally affect the mortal world, and thus can't Damage non-incorporeal opponents unless it has a suitable special ability or Talent. " +
+            "An incorporeal creature can't normally affect the mortal world, and thus can't Damage non-incorporeal opponents unless it has a suitable special ability or trait. " +
             "Creatures with the Incorporeal trait can Damage other creatures with the Incorporeal trait normally."
         );
 
@@ -322,14 +324,6 @@
             ""
         );
 
-        public static readonly TraitDefinition Scent = new TraitDefinition(
-            Enums.Traits.Scent,
-           TraitType.Creature,
-            "Scent",
-            false,
-            ""
-        );
-
         public static readonly TraitDefinition Flight = new TraitDefinition(
             Enums.Traits.Flight,
             TraitType.Creature,
@@ -362,6 +356,60 @@
             ""
         );
 
+        public static TraitDefinition Get(Enums.Traits trait)
+        {
+            return trait switch
+            {
+                // Creature Traits
+                Enums.Traits.Amorphous => Amorphous,
+                Enums.Traits.Amphibious => Amphibious,
+                Enums.Traits.Bestial => Bestial,
+                Enums.Traits.Blind => Blind,
+                Enums.Traits.BrutalCharge => BrutalCharge,
+                Enums.Traits.CatsLuck => CatsLuck,
+                Enums.Traits.Climb => Climb,
+                Enums.Traits.Crawler => Crawler,
+                Enums.Traits.Darkvision => Darkvision,
+                Enums.Traits.DeadlyNaturalWeapons => DeadlyNaturalWeapons,
+                Enums.Traits.EnergyResistance => EnergyResistance,
+                Enums.Traits.Fear => Fear,
+                Enums.Traits.Flyer => Flyer,
+                Enums.Traits.Immune => Immune,
+                Enums.Traits.Incorporeal => Incorporeal,
+                Enums.Traits.Legs => Legs,
+                Enums.Traits.MonstrousFeature => MonstrousFeature,
+                Enums.Traits.NaturalArmor => NaturalArmor,
+                Enums.Traits.PrehensileTail => PrehensileTail,
+                Enums.Traits.Regenerate => Regenerate,
+                Enums.Traits.Swim => Swim,
+                Enums.Traits.Truesight => Truesight,
+                Enums.Traits.Unliving => Unliving,
+                Enums.Traits.Vulnerability => Vulnerability,
+
+                // Weapon Traits
+                Enums.Traits.Balanced => Balanced,
+                Enums.Traits.Blast => Blast,
+                Enums.Traits.Cover => Cover,
+                Enums.Traits.Defensive => Defensive,
+                Enums.Traits.Pounce => Pounce,
+                Enums.Traits.Primitive => Primitive,
+                Enums.Traits.Proven => Proven,
+                Enums.Traits.Unbalanced => Unbalanced,
+                Enums.Traits.Unwieldy => Unwieldy,
+                Enums.Traits.Snare => Snare,
+                Enums.Traits.Toxic => Toxic,
+
+                // Misc Creature Traits
+                Enums.Traits.Tail => Tail,
+                Enums.Traits.Sleepless => Sleepless,
+                Enums.Traits.Flight => Flight,
+                Enums.Traits.Wings => Wings,
+                Enums.Traits.Horns => Horns,
+                Enums.Traits.HybridForm => HybridForm,
+
+                _ => throw new ArgumentOutOfRangeException(nameof(trait), trait, null)
+            };
+        }
 
     }
 }

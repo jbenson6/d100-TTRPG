@@ -11,6 +11,8 @@ namespace d100_TTRPG.Data_Objects.Feature
         public int Wounds { get; set; }
         public List<Skill.Skill>? Skills { get; set; }
         public List<Talent.Talent>? Talents { get; set; }
+
+        public List<Trait.Trait>? Traits { get; set; }
         public Enums.Armor ArmorProficiency { get; set; }
         public string? Description { get; set; }
         public bool isSpell {  get; set; }
@@ -27,7 +29,8 @@ namespace d100_TTRPG.Data_Objects.Feature
     Enums.Armor armorProficiency,
     string? description,
     bool isSpell,
-    bool deityReq)
+    bool deityReq,
+    List<Trait.Trait>? traits = null)
         {
             Feature = feature;
             PreReqChar = preReqChar;
@@ -36,6 +39,7 @@ namespace d100_TTRPG.Data_Objects.Feature
             Wounds = wounds;
             Skills = skills;
             Talents = talents;
+            Traits = traits;
             ArmorProficiency = armorProficiency;
             Description = description;
             this.isSpell = isSpell;

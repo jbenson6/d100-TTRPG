@@ -1,6 +1,7 @@
 ﻿using d100_TTRPG.Enums;
 using d100_TTRPG.Data_Objects.Skill;
 using d100_TTRPG.Data_Objects.Talent;
+using d100_TTRPG.Data_Objects.Trait;
 
 namespace d100_TTRPG.Data_Objects.Feature
 {
@@ -18,6 +19,11 @@ namespace d100_TTRPG.Data_Objects.Feature
         private static Talent.Talent T(Enums.Talents talent)
         {
             return new Talent.Talent(TalentDb.Get(talent));
+        }
+
+        private static Trait.Trait TR(Enums.Traits trait)
+        {
+            return new Trait.Trait(TraitDb.Get(trait));
         }
 
         private static Dictionary<Characteristics, int> Req(
@@ -632,7 +638,11 @@ namespace d100_TTRPG.Data_Objects.Feature
                 "make an unarmed strike against that opponent.",
 
                 false,
-                false
+                false,
+                new List<Trait.Trait>
+                {
+                    TR(Enums.Traits.DeadlyNaturalWeapons)
+                }
             );
 
         public static readonly FeatureDefinition Mutagens =

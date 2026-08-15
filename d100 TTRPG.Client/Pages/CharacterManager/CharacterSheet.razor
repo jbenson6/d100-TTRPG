@@ -976,6 +976,15 @@
                                     var charBonus =
                                         effective / 10;
 
+                                    var damage = weapon.Damage;
+                                    @if (weapon.Name.Contains("Unarmed"))
+                                    {
+                                        @if (featuresSelected.ContainsValue("MartialArtist") || purchasedFeatures.Contains("MartialArtist"))
+                                        {
+                                            damage = "1d10";
+                                        }
+                                    }
+
                                     <tr>
 
                                         <td>@weapon.Name</td>
@@ -995,7 +1004,7 @@
                                             @if (weapon.Range == "Melee")
                                             {
                                                 <span>
-                                                    @weapon.Damage+STR Bonus
+                                                    @damage+STR Bonus
                                                     <span class="text-muted">
                                                         (@charBonus)
                                                     </span>
@@ -1004,7 +1013,7 @@
                                             else
                                             {
                                                 <span>
-                                                    @weapon.Damage
+                                                    @damage
                                                 </span>
                                             }
                                         </td>
@@ -2725,6 +2734,11 @@
 
             totalFeatureMP += f.MP;
             totalFeatureWounds += f.Wounds;
+
+            foreach(var trait in f.Traits)
+            {
+                AddTrait(trait);
+            }
         }
 
         // -------------------------------------------------
@@ -3726,6 +3740,9 @@
             new List<string>();
 
         public List<string> Talents { get; set; } =
+            new List<string>();
+
+        public List<string> Traits { get; set; } =
             new List<string>();
     }
 

@@ -26,7 +26,8 @@ namespace d100_TTRPG.Controllers
                     CharBonuses = fd.CharBonus?.Select(c => c.ToString()).ToList() ?? new List<string>(),
                     PreReqChar = fd.PreReqChar?.ToDictionary(kv => kv.Key.ToString(), kv => kv.Value) ?? new Dictionary<string,int>(),
                     Skills = fd.Skills?.Select(s => s.Definition.Skill.ToString()).ToList() ?? new List<string>(),
-                    Talents = fd.Talents?.Select(s => s.Definition.Talent.ToString()).ToList() ?? new List<string>()
+                    Talents = fd.Talents?.Select(t => t.Definition.Talent.ToString()).ToList() ?? new List<string>(),
+                    Traits = fd.Traits?.Select(t => t.Definition.Trait.ToString()).ToList() ?? new List<string>(),
                 })
                 .OrderBy(x => x.Name)
                 .ToList();
@@ -45,6 +46,7 @@ namespace d100_TTRPG.Controllers
             public Dictionary<string,int> PreReqChar { get; set; } = new Dictionary<string,int>();
             public List<string> Skills { get; set; } = new List<string>();
             public List<string> Talents { get; set; } = new List<string>();
+            public List<string> Traits { get; set; } = new List<string>();
         }
     }
 }

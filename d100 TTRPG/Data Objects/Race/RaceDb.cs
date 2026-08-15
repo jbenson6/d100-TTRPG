@@ -761,7 +761,6 @@ namespace d100_TTRPG.Data_Objects.Race
 
                 new List<Trait.Trait>
                 {
-                    new Trait.Trait(TraitDb.Scent)
                 },
 
                 null,
@@ -915,7 +914,6 @@ namespace d100_TTRPG.Data_Objects.Race
                     new Trait.Trait(TraitDb.Immune),
                     new Trait.Trait(TraitDb.NaturalArmor),
                     new Trait.Trait(TraitDb.DeadlyNaturalWeapons),
-                    new Trait.Trait(TraitDb.Scent),
                     new Trait.Trait(TraitDb.Tail)
                 },
 
@@ -1221,7 +1219,6 @@ namespace d100_TTRPG.Data_Objects.Race
 
                 new List<Trait.Trait>
                 {
-                    new Trait.Trait(TraitDb.Scent),
                     new Trait.Trait(TraitDb.HybridForm)
                 },
 
