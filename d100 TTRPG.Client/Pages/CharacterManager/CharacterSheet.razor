@@ -2881,6 +2881,19 @@
                 sc + 1;
         }
 
+        //Add Feature Traits
+        foreach (var feat in purchasedFeatures)
+        {
+            var f =
+                features.FirstOrDefault(
+                    x => x.Name == feat);
+
+            foreach(var trait in f.Traits)
+            {
+                AddTrait(trait);
+            }
+        }
+
         // -------------------------------------------------
         // ARMOR
         // -------------------------------------------------
