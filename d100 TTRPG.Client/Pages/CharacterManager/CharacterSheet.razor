@@ -592,11 +592,11 @@
 
                 <h6 class="mt-3">Talents</h6>
 
-                @if (talents.Any())
+                @if (characterTalents.Any())
                 {
                     <div class="sheet-description-list">
 
-                        @foreach (var talent in talents.OrderBy(x => x))
+                        @foreach (var talent in characterTalents.OrderBy(x => x))
                         {
                             var description = GetTalentDescription(talent);
 
@@ -1195,10 +1195,10 @@
 
     private Dictionary<string, int> featureBonuses = new();
     private Dictionary<string, int> skillCounts = new();
-    private List<string> talents = new();
     private List<string> traits = new();
     private List<string> languages = new();
     private List<string> purchasedSkills = new();
+    private List<string> characterTalents = new();
 
     private int totalFeatureWounds = 0;
     private int totalMP = 0;
@@ -1325,7 +1325,7 @@
         // TALENTS
         // ============================================================
 
-        talents =
+        characterTalents =
             Character.Talents != null
                 ? new List<string>(Character.Talents)
                 : new List<string>();
@@ -1896,7 +1896,7 @@
                                         .ToList(),
 
             Talents =
-                talents
+                characterTalents
                     .Where(t => !string.IsNullOrWhiteSpace(t))
                     .OrderBy(t => t)
                     .ToList(),
@@ -2641,7 +2641,7 @@
     {
         featureBonuses.Clear();
         skillCounts.Clear();
-        talents.Clear();
+        characterTalents.Clear();
         traits.Clear();
 
         totalMP = 0;
@@ -2669,7 +2669,7 @@
             {
                 if (!string.IsNullOrWhiteSpace(talent))
                 {
-                    talents.Add(talent);
+                    characterTalents.Add(talent);
                 }
             }
 
@@ -2728,7 +2728,7 @@
             {
                 if (!string.IsNullOrWhiteSpace(talent))
                 {
-                    talents.Add(talent);
+                    characterTalents.Add(talent);
                 }
             }
 
@@ -2768,7 +2768,7 @@
             if (b != null &&
                 !string.IsNullOrWhiteSpace(b.Talent))
             {
-                talents.Add(b.Talent);
+                characterTalents.Add(b.Talent);
             }
 
             if (selectedBackground == "Aristocrat")
@@ -2812,7 +2812,7 @@
             if (t != null &&
                 !string.IsNullOrWhiteSpace(t.Talent))
             {
-                talents.Add(t.Talent);
+                characterTalents.Add(t.Talent);
             }
 
             if (selectedTrade == "Scholar")
@@ -2859,7 +2859,7 @@
             if (m != null &&
                 !string.IsNullOrWhiteSpace(m.Talent))
             {
-                talents.Add(m.Talent);
+                characterTalents.Add(m.Talent);
             }
 
             if (selectedMotivation == "Pleasure")
@@ -2898,6 +2898,7 @@
         {
             if (talent == "Magic Proficiency (X)")
                 totalMP++;
+            characterTalents.Add(talent);
         }
 
         // -------------------------------------------------
