@@ -1201,7 +1201,7 @@
     private List<string> purchasedSkills = new();
 
     private int totalFeatureWounds = 0;
-    private int totalFeatureMP = 0;
+    private int totalMP = 0;
 
     private int damage = 0;
     private int loF = 0;
@@ -1280,7 +1280,7 @@
 
         xpPool = Character.XpPool;
         xpSpent = Character.XpSpent;
-        totalFeatureMP = Character.MP;
+        totalMP = Character.MP;
 
 
         // ============================================================
@@ -1991,7 +1991,7 @@
                     .Where(x => !string.IsNullOrWhiteSpace(x))
                     .OrderBy(x => x)
                     .ToList(),
-            MP = totalFeatureMP,
+            MP = totalMP,
             CharacteristicImprovementSteps = new Dictionary<string, int>(
                     characteristicImprovementSteps)
         };
@@ -2644,7 +2644,7 @@
         talents.Clear();
         traits.Clear();
 
-        totalFeatureMP = 0;
+        totalMP = 0;
         totalFeatureWounds = 0;
 
         // -------------------------------------------------
@@ -2732,7 +2732,7 @@
                 }
             }
 
-            totalFeatureMP += f.MP;
+            totalMP += f.MP;
             totalFeatureWounds += f.Wounds;
 
             foreach(var trait in f.Traits)
@@ -2894,6 +2894,12 @@
             }
         }
 
+        foreach (var talent in purchasedTalents)
+        {
+            if (talent == "Magic Proficiency (X)")
+                totalMP++;
+        }
+
         // -------------------------------------------------
         // ARMOR
         // -------------------------------------------------
@@ -2995,7 +3001,7 @@
 
     private int GetTotalMP()
     {
-        return totalFeatureMP;
+        return totalMP;
     }
 
     // =================================================
