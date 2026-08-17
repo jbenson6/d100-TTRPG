@@ -678,19 +678,30 @@ For example, with spells that apply to an area or multiple targets, you may desi
                 @"You receive +20 on MSK tests to Knockout an opponent."
             );
 
-        public static readonly TalentDefinition SwiftAttack =
+        public static readonly TalentDefinition SwiftAttackMelee =
             new TalentDefinition(
                 Talents.SwiftAttack,
-                "Swift Attack",
+                "Swift Attack, Melee",
                 2,
                 true,
                 new List<TalentPrerequisite>
                 {
                     TalentPrerequisiteDb.Stat(Characteristics.MSK, 30)
                 },
-                @"The character’s speed with weapons is legendary, allowing him to launch flurries of attacks in melee. When a character makes a melee attack, he scores one hit on the initial Degree of Success on his Weapon Skill Test, plus one additional hit for every additional Degrees of Success. Additional hits are counted as separate hits for all intents and purposes, roll their Damage separately and are reduced by Armor and Toughness as normal. When using Dodge or Parry against a Swift Attack then each Degree of Success scored with a Dodge or Parry Skill Test negates one hit from the Swift Attack.
+                @"The character’s speed with melee weapons is legendary, allowing him to launch flurries of attacks in melee as a Full Action, except with weapons that have the Unwieldy trait. When a character uses this ability to make a melee attack, he scores one hit per DoS, with each hit counting as a separate attack for all intents and purposes."
+            );
 
-If a character is fighting with a weapon in either hand or benefits from a Talent or other source which allows him to make more than one attack in his turn only one of his attacks may be a Lightning Attack and have the chance of scoring additional hits. Melee weapons with the Unwieldy Special Quality cannot be used to make Lightning Attacks."
+        public static readonly TalentDefinition SwiftAttackRanged =
+            new TalentDefinition(
+                Talents.SwiftAttack,
+                "Swift Attack, Ranged",
+                2,
+                true,
+                new List<TalentPrerequisite>
+                {
+                    TalentPrerequisiteDb.Stat(Characteristics.RSK, 30)
+                },
+                @"The character’s speed with ranged weapons is legendary, allowing him to launch flurries of attacks in melee as a Full Action, except with weapons that have the Reload trait. When a character uses this ability to make a ranged attack, he scores one hit per DoS, with each hit counting as a separate attack for all intents and purposes."
             );
 
         public static readonly TalentDefinition Takedown =
